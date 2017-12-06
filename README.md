@@ -1,6 +1,11 @@
 ### Previous exercise 20171204: https://github.com/developingAlex/storms-of-december
 # LakeDisappointment 20171206
 
+# App planning
+## models:
+### Product
+- name
+- brandName
 # Steps to create this app:
 1. `mkdir api`
 1. `cd api`
