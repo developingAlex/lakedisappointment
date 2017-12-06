@@ -23,6 +23,7 @@ function register(req, res, next) {
 }
 
 module.exports = {
+  initialize: passport.initialize(),
   register,
   signIn: passport.authenticate('local', {session: false})
 } //in contrast to previous exercises' code: the curly braces necessary when exporting multiple things.

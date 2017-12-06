@@ -284,4 +284,32 @@ If you clone this to run you have to:
       }
     )
     ```
+1. Test it in your check.http file with:
+    ```
+    ###
+
+    POST http://localhost:7000/auth
+    Content-Type: application/json
+
+    {
+      "email": "user1@mail.com",
+      "password": "password123"
+    }
+    ```
+1. fine so far but if we wanted to allow a session (session: true) ( leave a cookie on the browser ) we need to have the passport initialized:
+    **api/middleware/auth.js**
+    ```javascript
+    module.exports = {
+      initialize: passport.initialize(),
+      register,
+      signIn: passport.authenticate('local', {session: true})
+    }
+    ```
+    **api/server.js**
+    ```javascript
+    const authMiddleware = require('./middleware/auth')
+    …
+    server.use(authMiddleware.initialize)
+    ```
+    **NOTE: in class this broke it so reverted back to session:false**
 1. 
