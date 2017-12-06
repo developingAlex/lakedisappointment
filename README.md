@@ -1,6 +1,12 @@
 ### Previous exercise 20171204: https://github.com/developingAlex/storms-of-december
 # LakeDisappointment 20171206
 
+# To run
+If you clone this to run you have to:
+1. `cd api`
+1. `yarn install`
+1. `yarn seed`
+
 # App planning
 ## models:
 ### Product
