@@ -1,7 +1,12 @@
 const express = require('express')
 const User = require('../models/User')
+const authMiddleware = require('../middleware/auth')
 
 const router = new express.Router()
 
+router.post('/auth/register', /*user middleware to handle the reg process */
+  /*  (req,res) => {}*/
+  authMiddleware.register
+)
 
 module.exports = router

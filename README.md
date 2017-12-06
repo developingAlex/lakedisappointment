@@ -186,6 +186,7 @@ If you clone this to run you have to:
       session: false, //Disable sessions as we'll use JWTs (JSON Web Tokens)
     })
     ```
+1. want to make a user registration middleware
 1. add an auth.js file to your routes folder and add the express router to it. (copy paste from the products route file)
     ```javascript
     const express = require('express')
@@ -195,4 +196,46 @@ If you clone this to run you have to:
 
     module.exports = router
     ```
-1. 
+1. creating a specific file for our auth logic middleware: /api/middleware/auth.js with code:
+    ```javascript
+    const User = require('../models/User')
+
+    function register(req, res, next) {
+        //create a new user model from the submitted data
+      const user = new User({
+        email: req.body.email,
+        firstName: req.body.firstName, 
+        lastName: req.body.lastName
+      })
+      //the below register method comes from the plugin to our User model
+      User.register(user, req.body.password, (error, user) => {
+        //either a user or an error will come back from this
+        if (error) { //our register middleware failed
+          next(error)
+          return
+        }
+        //modify the request to add the newly registered user object
+        req.user = user
+        next()
+      })
+    }
+
+    module.exports = {
+      register
+    } //the curly braces necessary when exporting multiple things.
+    ```
+1. bring it into our /api/routes/auth.js file with `const authMiddleware = require('../middleware/auth')`
+    ```javascript
+    const express = require('express')
+    const User = require('../models/User')
+    const authMiddleware = require('../middleware/auth')
+
+    const router = new express.Router()
+
+    router.post('/auth/register', /*user middleware to handle the reg process */
+      /*  (req,res) => {}*/
+      authMiddleware.register
+    )
+
+    module.exports = router
+    ```
