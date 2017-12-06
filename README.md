@@ -116,4 +116,34 @@
       }
     ```
     **NOTE: in the above for the reset script its there as npm instead of yarn because they are interchangeable and yarn is frequently not available on a production server**
-1. 
+1. Establish some routes, make a /api/routes/products.js file
+    ```javascript
+    const express = require('express')
+    const Product = require('../models/Product')
+
+    const router = new express.Router()
+
+    router.get('/products', (req, res) => {
+      Product.find()
+      .then((products) => {
+        res.status(200).json({products})
+      })
+      .catch((error)=> {
+        res.status(400).json({error: error.message}) //if you return the whole error you may be giving away too much information
+      })
+    })
+
+    module.exports = router
+    ```
+    **NOTE: if you return entire error objects you may be giving away more information that you need to**
+1. create a /api/check/check.http file to experiment with requests against your server:
+    ```javascript
+    ###
+    GET http://localhost:7000/products
+
+    ###
+    GET http://localhost:7000/...
+    ```
+1. add the line to your server.js file so that it knows about the routes.
+
+
