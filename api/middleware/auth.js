@@ -1,3 +1,4 @@
+const JWT = require('jsonwebtoken')
 const User = require('../models/User')
 const passport = require('passport')
 
@@ -20,6 +21,23 @@ function register(req, res, next) {
     req.user = user
     next()
    })
+}
+
+//instead of spitting back a user this will spit back a jwt token
+function signJWTForUser(req,res){
+  const user = req.user
+
+  const token = JWT.sign({
+    email: user.email
+  },
+  's9f7ys8d7y9u43tb43i8u02adfYSB#$T',
+  {
+    algorithm: 'HS256',
+    expiresIn: '7 days',
+    subject: user._id //this info from https://github.com/auth0/node-jsonwebtoken
+  }) //in a real app this would be in an environment variables thing to avoid leaking on github
+  
+  res.json({token})
 }
 
 module.exports = {

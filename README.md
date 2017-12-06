@@ -314,4 +314,29 @@ If you clone this to run you have to:
     **NOTE: in class this broke it so reverted back to session:false**
 1. **JWT.io was mentioned in class because its a good resource for what we're doing today**
     ![image from jwt.io](/readme-assets/jwt-screenshot.jpg)
+    above: Changing the secret means you will have to change the payload in some way to get it to regenerate and therefore be valid again
+1. `cd api`
+1. `yarn add jsonwebtoken`
+1. /api/middleware/auth.js:
+    ```javascript
+    const JWT = require('jsonwebtoken')
+    …
+    //instead of spitting back a user this will spit back a jwt token
+    function signJWTForUser(req,res){
+      const user = req.user
+
+      const token = JWT.sign({
+        email: user.email
+      },
+      's9f7ys8d7y9u43tb43i8u02adfYSB#$T',
+      {
+        algorithm: 'HS256',
+        expiresIn: '7 days',
+        subject: user._id //this info from https://github.com/auth0/node-jsonwebtoken
+      }) //in a real app this would be in an environment variables thing to avoid leaking on github
+      
+      res.json({token})
+    }
+    ```
+1. try using your secret value in the jwt.io site to experiment how it will hash data.
 1. 
