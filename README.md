@@ -10,7 +10,7 @@ If you clone this to run you have to:
     * on Linux:
         1. verify by executing `ps -aux | grep mong`
         1. start the server by executing `sudo service mongod start`
-    * on iOS:
+    * on MacOS:
         1. Check if its running with `brew services list`
         1. ensure the server is running by executing `brew services start mongod`
 1. `yarn dev`
@@ -346,6 +346,7 @@ If you clone this to run you have to:
     }
     ```
 1. try using your secret value in the jwt.io site to experiment how it will hash data.
+1. You can generate secret keys with such a command: `openssl rand -base64 48`
 1. You can then refactor your auth routes to make use of the jwttoken middleware we just made:
     ```javascript
     router.post('/auth/register', /*user middleware to handle the reg process */
@@ -358,4 +359,66 @@ If you clone this to run you have to:
       authMiddleware.signIn, //the next() function for this is whats below: signJWTForUser
       authMiddleware.signJWTForUser
     )
+    ```
+1. add the functionality to allow sign in based off of jwt tokens instead of username and password:
+
+    `cd api`
+    `yarn add passport-jwt`
+1. add to api/middleware/auth.js:
+    ```javascript
+    const PassportJwt = require('passport-jwt')
+    …
+    passport.use(new PassportJwt.Strategy(
+    {
+      jwtFromRequest: PassportJwt.ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: jwtSecret,
+      algorithms: [jwtAlgorithm]
+    },
+    //when we have a verified token:
+    (payload, done)=>{
+      //find the real user from our database using the id in the JWT
+      User.findById(payload.sub)
+        .then((user) => { //if user was found with this id.
+          if(user){
+            done(null, user)
+          }
+          else{ //if no user was found
+            done(null, false)
+          }
+        })
+        .catch((error) => {
+          //if there was a failure
+          done(error, false)
+        })
+    }))
+    …
+    module.exports = {
+      initialize: passport.initialize(),
+      register,
+      signJWTForUser,
+      requireJWT: passport.authenticate('jwt',{ session: false }),
+      signIn: passport.authenticate('local', {session: false})
+    }
+    ```
+1. Now that we have that there, how to use it?
+1. We can make it so that authentication is required to view the products page:
+1. in api/routes/products.js
+    ```javascript
+    const authMiddleWare = require('../middleware/auth')
+    …
+    router.get('/products', authMiddleWare.requireJWT, (req, res) => {
+    …  
+    ```
+1. Then you can try to test that authenticating with a token works, by running the POST line in your check.http file with password and email to intially get a token. Then craft another POST line that sends the token as 
+    ```
+    ###
+
+    GET http://localhost:7000/products
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNTM0ODM1LCJleHAiOjE1MTMxMzk2MzUsInN1YiI6IjVhMjc1MjUyOThlNTc1NWNhZmFiNDgxZCJ9.R5DRPb-gp3JFH1DiN3hzuwyqlGqF5ZFkVubxGVyq6L4
+    ```
+    **NOTE: in the above there is no new line after 'Bearer'! it is only a space between the end of Bearer and the start of the token code! the text may just look like that because it's wrapping!**
+1. 
+    ```javascript
+    …
+    
     ```
