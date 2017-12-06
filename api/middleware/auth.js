@@ -1,5 +1,7 @@
 const User = require('../models/User')
+const passport = require('passport')
 
+passport.use(User.createStrategy())
 function register(req, res, next) {
     //create a new user model from the submitted data
    const user = new User({
@@ -21,5 +23,6 @@ function register(req, res, next) {
 }
 
 module.exports = {
-  register
-} //the curly braces necessary when exporting multiple things.
+  register,
+  signIn: passport.authenticate('local', {session: false})
+} //in contrast to previous exercises' code: the curly braces necessary when exporting multiple things.

@@ -13,4 +13,13 @@ router.post('/auth/register', /*user middleware to handle the reg process */
   }
 )
 
+router.post('/auth',
+  authMiddleware.signIn,
+  (req,res) => {
+    res.json({
+      user: req.user
+    })
+  }
+)
+
 module.exports = router

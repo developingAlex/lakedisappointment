@@ -14,3 +14,15 @@ Content-Type: application/json
   "lastName": "Bravo",
   "password": "password123"
 }
+
+###
+
+POST http://localhost:7000/auth
+Content-Type: application/json
+
+{
+  "email": "user1@mail.com",
+  "firstName": "Alphie",
+  "lastName": "Bravo",
+  "password": "password123"
+}

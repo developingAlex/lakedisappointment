@@ -245,3 +245,43 @@ If you clone this to run you have to:
     ```javascript
     server.use('/', [require('./routes/products'), require('./routes/auth')])
     ```
+1. Test it in the http file with a line like this:
+    ```
+    ###
+    POST http://localhost:7000/auth/register
+    Content-Type: application/json
+
+    {
+      "email": "user1@mail.com",
+      "firstName": "Alphie",
+      "lastName": "Bravo",
+      "password": "password123"
+    }
+    ```
+    **Note: there cannot be a blank line after the last json key-value pair (before the closing curly brace), or it will see the block as ending before it really does.**
+    **Note: the requests must each be separated by three hash/number symbols ###.**
+    **Note: the blank line before the curly braces block is necessary.**
+
+1. Require in passport in the middleware/auth.js file
+    ```javascript
+    const passport = require('passport')
+    …
+    passport.use(User.createStrategy())
+
+    module.exports = {
+      register, 
+      signIn: passport.authenticate('local', {session: false} )
+    }
+    ```
+1. Add the following to your middleware/auth.js:
+    ```javascript
+    router.post('/auth',
+      authMiddleware.signIn,
+      (req,res) => {
+        res.json({
+          user: req.user
+        })
+      }
+    )
+    ```
+1. 
