@@ -14,6 +14,7 @@ Product.create([
 ])
 .then((products) => {
   console.log('created products', products)
+  process.exit() //prevent hanging
 })
 .catch ((error) => {
   console.error(error)
