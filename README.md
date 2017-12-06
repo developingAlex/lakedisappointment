@@ -186,4 +186,13 @@ If you clone this to run you have to:
       session: false, //Disable sessions as we'll use JWTs (JSON Web Tokens)
     })
     ```
+1. add an auth.js file to your routes folder and add the express router to it. (copy paste from the products route file)
+    ```javascript
+    const express = require('express')
+    const User = require('../models/User')
+
+    const router = new express.Router()
+
+    module.exports = router
+    ```
 1. 
