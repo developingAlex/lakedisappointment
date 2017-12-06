@@ -6,6 +6,14 @@ If you clone this to run you have to:
 1. `cd api`
 1. `yarn install`
 1. `yarn seed`
+1. ensure that mongodb service is started
+    * on Linux:
+        1. verify by executing `ps -aux | grep mong`
+        1. start the server by executing `sudo service mongod start`
+    * on iOS:
+        1. Check if its running with `brew services list`
+        1. ensure the server is running by executing `brew services start mongod`
+1. `yarn dev`
 
 # App planning
 ## models:
@@ -151,5 +159,21 @@ If you clone this to run you have to:
     GET http://localhost:7000/...
     ```
 1. add the line to your server.js file so that it knows about the routes.
+    ```javascript
+    server.use('/', [require('./routes/products')])
+    ```
+1. looking into [passport](https://github.com/agrajm/passport-mongo) for authentication. 
+    1. `cd api`
+    1. `yarn add passport passport-local passport-local-mongoose`
+1. Going to the create the user model next:
+    ```javascript
+    const mongoose = require('./init')
 
+    const userSchema = new mongoose.Schema({
+      firstName: String,
+      lastName: String
+    })
 
+    module.exports = User
+    ```
+1. 
