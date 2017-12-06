@@ -312,4 +312,6 @@ If you clone this to run you have to:
     server.use(authMiddleware.initialize)
     ```
     **NOTE: in class this broke it so reverted back to session:false**
+1. **JWT.io was mentioned in class because its a good resource for what we're doing today**
+    ![image from jwt.io](/readme-assets/jwt-screenshot.jpg)
 1. 
