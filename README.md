@@ -176,4 +176,14 @@ If you clone this to run you have to:
 
     module.exports = User
     ```
+1. Analogous to adding devise to the user model back in Rails, do this to add passport to our user model:
+    ```javascript
+    const passportLocalMongoose = require('passport-local-mongoose')
+    …
+    userSchema.plugin(passportLocalMongoose, {
+      userNameField: 'email', //this is the value to sign in with
+      userNameLowerCase: true, //ensure that all emails are lowercase
+      session: false, //Disable sessions as we'll use JWTs (JSON Web Tokens)
+    })
+    ```
 1. 
