@@ -419,8 +419,166 @@ If you clone this, to run it you have to:
     Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNTM0ODM1LCJleHAiOjE1MTMxMzk2MzUsInN1YiI6IjVhMjc1MjUyOThlNTc1NWNhZmFiNDgxZCJ9.R5DRPb-gp3JFH1DiN3hzuwyqlGqF5ZFkVubxGVyq6L4
     ```
     **NOTE: in the above there is no new line after 'Bearer'! it is only a space between the end of Bearer and the start of the token code! the text may just look like that because it's wrapping!**
-1. 
-    ```javascript
-    …
+
+## Moving onto working on the front end - React
+1.  ensure your terminal is at the root of your project:
     
+    `cd lakedisappointment`
+
+    create a new react-app into the web folder we made earlier:
+
+    `yarn create react-app web`
+
+    
+    **Note: we already created a folder called web before we ran the above command**
+1.  Create react-app creates a start script which we can copy for our 'dev' convention:
+    ```javascript
+    "scripts": {
+      "start": "react-scripts start",
+      "dev": "react-scripts start",
+      "build": "react-scripts build",
+      "test": "react-scripts test --env=jsdom",
+      "eject": "react-scripts eject"
+    }    
     ```
+1.  Go into app.css and delete everything except text align center for .app
+1. Comment out the following line for caching issues in /web/src/index.js
+    ```javascript
+    ReactDOM.render(<App />, document.getElementById('root'));
+    // registerServiceWorker();
+    ```
+1. Now we can run `yarn dev` to get our server up and running, do this in both the web folder and the api folder, and you'll have both frontend server and backend server running (ensure your mongod is running in the background)
+1. strip the standard html from App.js and replace with your own simple
+    ```javascript
+    ReactDOM.render(<App />, document.getElementById('root'));
+    // registerServiceWorker();
+    ```
+1. Create a file at /web/src/components/SignInForm.js with the following code:
+    ```javascript
+    import React from 'react'
+
+    function SignInForm({
+
+    }) {
+      return (
+        <form>
+          <label
+          
+          >
+            {'Email: '}
+            <input
+              type='email'
+              name='email'
+            />
+          </label>
+          <label
+          
+          >
+            {'Password: '}
+            <input
+              type='password'
+              name='password'
+            />
+          </label>
+
+        </form>
+      )
+    }
+
+    export default SignInForm
+    ```
+1.  import it in App.js: 
+    ```javascript
+    import SignInForm from './components/SignInForm'
+    ```
+1. in index.css we amended it to the following:
+    ```javascript
+    *{
+      margin: 0px;
+      padding: 0px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    html{
+      font-size: 20px;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+    ```
+1. You can then incorporate the 
+    ```javascript
+    <SignInForm/>
+    ```
+1. we want our to make labels fullwidth:
+    ```javascript
+    label {
+      display: block;
+    }
+    input{
+      display: block;
+      width: 100%;
+    }
+    ```
+1. we want our to app to not take up the full width of a widescreen so in our App.css file:
+    ```javascript
+    .App{
+    max-width: 30rem;
+    margin: auto
+    }
+    ```
+1. Now add a button to the components/SignInForm.js:
+    ```html
+    <button>
+      Sign in
+    </button>
+    ```
+1. And style it from index.css:
+    ```css
+    button{
+      padding: 0.33rem 0.5rem;
+      border: none;
+      background-color: orange;
+    }
+    ```
+1. add functionality to the button and the form:
+1. we want to preserve log(in our browser's console.) stop the form from submitting as the browser normally does, event.preventDefault() in signinform.js
+    ```html
+    <form
+        onSubmit = {(event)=>{
+          event.preventDefault()
+          console.log('form-submitted', event.target)
+        }}>
+    ```    
+1. at this stage, when you run it in the browser and enter some values into the form then in the console of the browser you can query the page with the following:
+    ```
+    var form = document.forms[0]
+    form.elements.email
+    form.elements.password
+    form.elements.email.value
+    ```
+1. To add the same visibility of the values to our submit amend the form tag to the following:
+    ```javascript
+    <form
+      onSubmit = {(event)=>{
+        event.preventDefault()
+        console.log('form-submitted', event.target)
+        const form = event.target
+        const elements = form.elements //the key value pairs
+        const email = elements.email.value
+        const password = elements.password.value
+        console.log({email, password})
+      }}
+    >
+    ```
+1. 
+```javascript
+
+```
+1. 
+```javascript
+
+```

@@ -1,0 +1,28 @@
+*{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+html{
+  font-size: 20px;
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+label {
+  display: block;
+}
+input{
+  display: block;
+  width: 100%;
+}
+
+button{
+  padding: 0.33rem 0.5rem;
+  border: none;
+  background-color: orange;
+}
