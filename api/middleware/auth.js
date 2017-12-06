@@ -4,6 +4,7 @@ const passport = require('passport')
 const jwtSecret = 's9f7ys8d7y9u43tb43i8u02adfYSB#$T'
 const jwtAlgorithm = 'HS256'
 const jwtExpiresIn = '7 days'
+const PassportJwt = require('passport-jwt')
 
 
 passport.use(User.createStrategy())
@@ -26,6 +27,30 @@ function register(req, res, next) {
     next()
    })
 }
+
+passport.use(new PassportJwt.Strategy(
+  {
+    jwtFromRequest: PassportJwt.ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: jwtSecret,
+    algorithms: [jwtAlgorithm]
+  },
+  //when we have a verified token:
+  (payload, done)=>{
+    //find the real user from our database using the id in the JWT
+    User.findById(payload.sub)
+      .then((user) => { //if user was found with this id.
+        if(user){
+          done(null, user)
+        }
+        else{ //if no user was found
+          done(null, false)
+        }
+      })
+      .catch((error) => {
+        //if there was a failure
+        done(error, false)
+      })
+  }))
 
 //instead of spitting back a user this will spit back a jwt token
 function signJWTForUser(req,res){
