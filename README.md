@@ -65,4 +65,23 @@
 
     module.exports = mongoose
     ```
+1. plan some models in the readme
+1. create the file for the product: /api/models/Product.js and add initial line from init: `const mongoose = require('./init')`
+1. populate the Product model with its schema, which I got from looking at the code from the previous exercise:
+    ```javascript
+    const mongoose = require('./init')
+
+    const Product = mongoose.model('Product', {
+      brandName: {
+        type: String, 
+        required: [true, 'Brand Name is required']
+      },
+      name: {
+        type: String,
+        required: [true, 'Name is required']
+      }
+    })
+
+    module.exports = Product
+    ```
 1. 
