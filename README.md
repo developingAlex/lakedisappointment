@@ -84,4 +84,36 @@
 
     module.exports = Product
     ```
+1. think about what other attributes you might want to add to the product, for now we can stick with this to get it up and running.
+1. start on making the seeds file to create some data.
+1. first thing to do is make a /api/models/seeds.js file and give it the line to make it aware of our product: `const Product = require('./Product')`
+1. create a /api/models/drop.js file to allow easy wiping during development:
+    ```javascript
+    const Product = require('./Product')
+
+    Product.deleteMany()
+    .then(() => {
+      console.log('deleted all products')
+      process.exit() //stop from hanging
+    })
+    ```
+    Then add a script for it so it runs when you run `yarn drop`:
+    ```javascript
+    },
+      "scripts": {
+        "dev": "nodemon server.js",
+        "drop": "node models/drop.js"
+      }
+    ```
+1. Add other useful scripts:
+    ```javascript
+    },
+      "scripts": {
+        "dev": "nodemon server.js",
+        "drop": "node models/drop.js",
+        "seed": "node models/seeds.js",
+        "reset": "npm run drop && npm run seed"
+      }
+    ```
+    **NOTE: in the above for the reset script its there as npm instead of yarn because they are interchangeable and yarn is frequently not available on a production server**
 1. 

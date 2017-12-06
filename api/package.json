@@ -12,6 +12,7 @@
     "nodemon": "^1.12.5"
   },
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "drop": "node models/drop.js"
   }
 }
