@@ -181,16 +181,18 @@ If you clone this to run you have to:
     const passportLocalMongoose = require('passport-local-mongoose')
     …
     userSchema.plugin(passportLocalMongoose, {
-      userNameField: 'email', //this is the value to sign in with
-      userNameLowerCase: true, //ensure that all emails are lowercase
+      usernameField: 'email', //this is the value to sign in with
+      usernameLowerCase: true, //ensure that all emails are lowercase
       session: false, //Disable sessions as we'll use JWTs (JSON Web Tokens)
     })
+
+    const User = mongoose.model('User', userSchema)
+    module.exports = User
     ```
-1. want to make a user registration middleware
+1. want to make user registration middleware
 1. add an auth.js file to your routes folder and add the express router to it. (copy paste from the products route file)
     ```javascript
     const express = require('express')
-    const User = require('../models/User')
 
     const router = new express.Router()
 
@@ -238,4 +240,8 @@ If you clone this to run you have to:
     )
 
     module.exports = router
+    ```
+1. Give your server.js file knowledge of the new route:
+    ```javascript
+    server.use('/', [require('./routes/products'), require('./routes/auth')])
     ```
