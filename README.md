@@ -337,6 +337,25 @@ If you clone this to run you have to:
       
       res.json({token})
     }
+    …
+    module.exports = {
+      initialize: passport.initialize(),
+      register,
+      signJWTForUser,
+      signIn: passport.authenticate('local', {session: false})
+    }
     ```
 1. try using your secret value in the jwt.io site to experiment how it will hash data.
-1. 
+1. You can then refactor your auth routes to make use of the jwttoken middleware we just made:
+    ```javascript
+    router.post('/auth/register', /*user middleware to handle the reg process */
+      /*  (req,res) => {}*/
+      authMiddleware.register,
+      authMiddleware.signJWTForUser
+    )
+
+    router.post('/auth',
+      authMiddleware.signIn, //the next() function for this is whats below: signJWTForUser
+      authMiddleware.signJWTForUser
+    )
+    ```

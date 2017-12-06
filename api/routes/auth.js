@@ -6,20 +6,12 @@ const router = new express.Router()
 router.post('/auth/register', /*user middleware to handle the reg process */
   /*  (req,res) => {}*/
   authMiddleware.register,
-  (req,res) => {
-    res.json({
-      user: req.user
-    })
-  }
+  authMiddleware.signJWTForUser
 )
 
 router.post('/auth',
-  authMiddleware.signIn,
-  (req,res) => {
-    res.json({
-      user: req.user
-    })
-  }
+  authMiddleware.signIn, //the next() function for this is whats below: signJWTForUser
+  authMiddleware.signJWTForUser
 )
 
 module.exports = router

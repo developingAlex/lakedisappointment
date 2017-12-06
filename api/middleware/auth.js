@@ -38,7 +38,7 @@ function signJWTForUser(req,res){
   {
     algorithm: jwtAlgorithm,
     expiresIn: jwtExpiresIn,
-    subject: user._id //this info from https://github.com/auth0/node-jsonwebtoken
+    subject: user._id.toString() //this info from https://github.com/auth0/node-jsonwebtoken
   }) //in a real app this would be in an environment variables thing to avoid leaking on github
 
   res.json({token})
@@ -47,5 +47,6 @@ function signJWTForUser(req,res){
 module.exports = {
   initialize: passport.initialize(),
   register,
+  signJWTForUser,
   signIn: passport.authenticate('local', {session: false})
 } //in contrast to previous exercises' code: the curly braces necessary when exporting multiple things.
