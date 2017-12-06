@@ -1,6 +1,10 @@
 const JWT = require('jsonwebtoken')
 const User = require('../models/User')
 const passport = require('passport')
+const jwtSecret = 's9f7ys8d7y9u43tb43i8u02adfYSB#$T'
+const jwtAlgorithm = 'HS256'
+const jwtExpiresIn = '7 days'
+
 
 passport.use(User.createStrategy())
 function register(req, res, next) {
@@ -30,13 +34,13 @@ function signJWTForUser(req,res){
   const token = JWT.sign({
     email: user.email
   },
-  's9f7ys8d7y9u43tb43i8u02adfYSB#$T',
+  jwtSecret,
   {
-    algorithm: 'HS256',
-    expiresIn: '7 days',
+    algorithm: jwtAlgorithm,
+    expiresIn: jwtExpiresIn,
     subject: user._id //this info from https://github.com/auth0/node-jsonwebtoken
   }) //in a real app this would be in an environment variables thing to avoid leaking on github
-  
+
   res.json({token})
 }
 
