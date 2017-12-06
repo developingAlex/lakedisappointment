@@ -6,7 +6,7 @@ If you clone this to run you have to:
 1. `cd api`
 1. `yarn install`
 1. `yarn seed`
-1. ensure that mongodb service is started
+1. Ensure that mongod service is started:
     * on Linux:
         1. verify by executing `ps -aux | grep mong`
         1. start the server by executing `sudo service mongod start`
@@ -20,14 +20,14 @@ If you clone this to run you have to:
 ### Product
 - name
 - brandName
-# Steps to create this app:
+# Walkthrough of the steps to performed to get authentication working in Node:
 1. `mkdir api`
 1. `cd api`
 1. `yarn init`
-1. gives you a package.json file
+1. Gives you a package.json file
 1. `yarn add express body-parser`
-1. add gitignore for node with the vscode plugin
-1. create your **server.js** file with boilerplate:
+1. Add gitignore for node with the vscode plugin
+1. Create your **server.js** file with boilerplate:
     ```javascript
     const express = require('express')
     const bodyParser = require('body-parser')
@@ -46,8 +46,8 @@ If you clone this to run you have to:
     })
 
     ```
-1. add nodemon for development: `yarn add nodemon --dev`
-1. add nodemon line to your package.json file to allow running the shortcut `yarn dev` to start your development server:
+1. Add nodemon for development: `yarn add nodemon --dev`
+1. Add nodemon line to your package.json file to allow running the shortcut `yarn dev` to start your development server:
     ```javascript
     …
     },
@@ -55,12 +55,12 @@ If you clone this to run you have to:
         "dev": "nodemon server.js"
       }
     ```
-1. install mongoose:
+1. Install mongoose:
     1. `cd api`
     1. `yarn add mongoose`
-1. create foler: /api/models
-1. create file: /api/models/init.js
-1. populate /api/models/init.js with boilerplate:
+1. Create foler: /api/models
+1. Create file: /api/models/init.js
+1. Populate /api/models/init.js with boilerplate:
     ```javascript
     const mongoose = require('mongoose')
 
@@ -79,9 +79,9 @@ If you clone this to run you have to:
 
     module.exports = mongoose
     ```
-1. plan some models in the readme
-1. create the file for the product: /api/models/Product.js and add initial line from init: `const mongoose = require('./init')`
-1. populate the Product model with its schema, which I got from looking at the code from the previous exercise:
+1. Plan some models in the readme
+1. Create the file for the product: /api/models/Product.js and add initial line from init: `const mongoose = require('./init')`
+1. Populate the Product model with its schema, which I got from looking at the code from the previous exercise:
     ```javascript
     const mongoose = require('./init')
 
@@ -98,10 +98,10 @@ If you clone this to run you have to:
 
     module.exports = Product
     ```
-1. think about what other attributes you might want to add to the product, for now we can stick with this to get it up and running.
-1. start on making the seeds file to create some data.
-1. first thing to do is make a /api/models/seeds.js file and give it the line to make it aware of our product: `const Product = require('./Product')`
-1. create a /api/models/drop.js file to allow easy wiping during development:
+1. Think about what other attributes you might want to add to the product, for now we can stick with this to get it up and running.
+1. Start on making the seeds file to create some data.
+1. First thing to do is make a /api/models/seeds.js file and give it the line to make it aware of our product: `const Product = require('./Product')`
+1. Create a /api/models/drop.js file to allow easy wiping during development:
     ```javascript
     const Product = require('./Product')
 
@@ -150,7 +150,7 @@ If you clone this to run you have to:
     module.exports = router
     ```
     **NOTE: if you return entire error objects you may be giving away more information that you need to**
-1. create a /api/check/check.http file to experiment with requests against your server:
+1. Create a /api/check/check.http file to experiment with requests against your server:
     ```javascript
     ###
     GET http://localhost:7000/products
@@ -158,11 +158,11 @@ If you clone this to run you have to:
     ###
     GET http://localhost:7000/...
     ```
-1. add the line to your server.js file so that it knows about the routes.
+1. Add the line to your server.js file so that it knows about the routes.
     ```javascript
     server.use('/', [require('./routes/products')])
     ```
-1. looking into [passport](https://github.com/agrajm/passport-mongo) for authentication. 
+1. Looking into [passport](https://github.com/agrajm/passport-mongo) for authentication. 
     1. `cd api`
     1. `yarn add passport passport-local passport-local-mongoose`
 1. Going to the create the user model next:
@@ -189,7 +189,7 @@ If you clone this to run you have to:
     const User = mongoose.model('User', userSchema)
     module.exports = User
     ```
-1. want to make user registration middleware
+1. Now we want to make user registration middleware
 1. add an auth.js file to your routes folder and add the express router to it. (copy paste from the products route file)
     ```javascript
     const express = require('express')
@@ -259,7 +259,9 @@ If you clone this to run you have to:
     }
     ```
     **Note: there cannot be a blank line after the last json key-value pair (before the closing curly brace), or it will see the block as ending before it really does.**
+
     **Note: the requests must each be separated by three hash/number symbols ###.**
+    
     **Note: the blank line before the curly braces block is necessary.**
 
 1. Require in passport in the middleware/auth.js file
