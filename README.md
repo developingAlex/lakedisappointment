@@ -1,8 +1,8 @@
 ### Previous exercise 20171204: https://github.com/developingAlex/storms-of-december
 # LakeDisappointment 20171206
 
-# To run
-If you clone this to run you have to:
+# How to run
+If you clone this, to run it you have to:
 1. `cd api`
 1. `yarn install`
 1. `yarn seed`
@@ -20,7 +20,7 @@ If you clone this to run you have to:
 ### Product
 - name
 - brandName
-# Walkthrough of the steps to performed to get authentication working in Node:
+# Walkthrough of the steps performed to get authentication working in Node:
 1. `mkdir api`
 1. `cd api`
 1. `yarn init`
