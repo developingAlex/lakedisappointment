@@ -24,3 +24,8 @@ Content-Type: application/json
   "email": "user1@mail.com",
   "password": "password123"
 }
+
+###
+
+GET http://localhost:7000/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNTM0ODM1LCJleHAiOjE1MTMxMzk2MzUsInN1YiI6IjVhMjc1MjUyOThlNTc1NWNhZmFiNDgxZCJ9.R5DRPb-gp3JFH1DiN3hzuwyqlGqF5ZFkVubxGVyq6L4

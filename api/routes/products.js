@@ -1,9 +1,9 @@
 const express = require('express')
 const Product = require('../models/Product')
-
+const authMiddleWare = require('../middleware/auth')
 const router = new express.Router()
 
-router.get('/products', (req, res) => {
+router.get('/products', authMiddleWare.requireJWT, (req, res) => {
   Product.find()
   .then((products) => {
     res.status(200).json({products})

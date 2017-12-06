@@ -73,5 +73,6 @@ module.exports = {
   initialize: passport.initialize(),
   register,
   signJWTForUser,
+  requireJWT: passport.authenticate('jwt',{ session: false }),
   signIn: passport.authenticate('local', {session: false})
 } //in contrast to previous exercises' code: the curly braces necessary when exporting multiple things.
