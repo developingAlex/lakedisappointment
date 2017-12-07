@@ -732,7 +732,7 @@ import api from './init'
     `cd web`
 
     `yarn add jwt-decode`
-1. we wand our sign in method to return the jwt token
+1. we want our sign in method to return the jwt token
 1. create a new token.js file in /src/api to handle all the jwt token stuff
 1. add to the auth.js file:
 
@@ -740,8 +740,8 @@ import api from './init'
 1. Auth.js now looks like:
     ```javascript
     import api from './init'
-
     import decodeJWT from 'jwt-decode'
+
     export function signIn({ email,  password}){
       return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
       /*the above is shorthand for {email: email, password: password}*/
@@ -765,7 +765,7 @@ import api from './init'
         })
       }
     ```
-1. Amend the render method as follows:
+1. To display some simple user information to the signed in user, amend the render method as follows:
     ```javascript
     render() {
         const { decodedToken } = this.state
@@ -797,11 +797,23 @@ import api from './init'
     <p> Signed in at { new Date(decodedToken.iat*1000).toISOString() }</p>
     <p> session expires at { new Date(decodedToken.exp*1000).toISOString() }</p>
     ```
-1. At this point if the browser is refreshed, the session is lost, if we want the session to persist, we need to look into storing the token on the user's browser
+1. At this point if the browser is refreshed, the session is lost, if we want the session to persist, we need to look into storing the authentication token on the user's browser (there are two options, local and session storage, session means for the life of the web browser program, and local is more long term (cookie))
 
     look up mozilla dev network docs: API/Window/localStorage for some information about that.
-1. In our /web/src/api/token.js file
+1. There are javascript calls that you can use to store values to a users local storage, the values are key-value pairs. Those calls are:
+    * localStorage.setItem(key, value)
+    * localStorage.getItem(key)
+    * localStorage.removeItem(key)
+
+    Eg.
+
+    `localStorage.setItem('preferredColor','teal')`
+
+    `const favColor = localStorage.getItem('preferredColor')`
+1. We will encapsulate all that logic in it's own file
+1. create a /web/src/api/token.js file and fill it with this code:
     ```javascript
+    //we'll call our key 'userToken' in case other types of tokens are neccessary down the track
     const key = 'userToken'
 
     export function saveToken(token) {
@@ -818,7 +830,31 @@ import api from './init'
     }
     ```
 1. We want to consider if the token on the users computer becomes corrupted or not?
-1. we want an ability to know if the token is valid or not:
+1. we want an ability to know if the token is valid or not, to do that we'll need the help of jwt-decode so import it at the top of your token.js file:
+
+    `import decodeJWT from 'jwt-decode'`
+
+    then we can amend our getToken method to use that decode function to check if it's able to decode it (if it's formatted incorrectly it won't be able to be decoded and so we will know it's corrupted)
+
+    The docs for jwt-decode state that if its invalid it will throw an error, any code that does that will have to have such a situation accounted for with a *try* and *catch*:
+
+    ```javascript
+    export function getToken(){
+      const token = localStorage.getItem(key)
+      try{
+        const decodedToken = decodeJWT(token)
+        // the token is VALID
+      }
+      catch(error){
+        // the token is invalid
+      }
+    }
+    ```
+
+    **Note: In regards to the term _valid_ above, it means the token is formatted correctly, it doesn't guarantee that the server's logic will view the token as valid (it may have expired for example)**
+1. So now that we've gotten that far, as noted we haven't handled for the event that the token is expired.
+
+    To do that, add the following bit of logic to your getToken() function (which we may as well rename at this point to getValidToken) within the VALID try block that compares the *now* time to the decodedToken.exp time:
     ```javascript
     export function getValidToken(){
       const token = localStorage.getItem(key)
@@ -828,13 +864,12 @@ import api from './init'
         const now = Date.now() / 1000
         //check if token has expired
         if (now > decodedToken.exp) {
-          return null
+          return null //the token is expired therefore invalid
         }
-        return token
-        
+        return token //if execution got this far then it must be ok.
       }
       catch (error) {
-        return null
+        return null //the token was badly formatted or corrupted therefore invalid
       }
     }
     ```
@@ -851,13 +886,46 @@ import api from './init'
       }
     }
     ```
-1. the token.js file now looks like:
+    **Note: You will notice that we have not placed the above call to decodeJWT (which is capable of throwing errors) within a try-catch block, in this particular case before that is called the getValidToken was called (which does make the same call and vetted the result) so we can be quite confident in this case that returning the result of a subsequent call to it will not throw an error**
+
+    **As an aside, in class it was shown that the following may be a slightly safer way to write the same logic:**
     ```javascript
-    import decodeJWT from 'jwt-decode'
+    export function getDecodedToken() {
+      try{
+        return decodeJWT(getValidToken())
+      }
+      catch(error){
+        return null
+      }
+    }
+    ```
+1. Now that we've made the token file full of its helper functions we want to make use of it in our /web/src/api/auth.js file so import it
 
-    const key = 'userToken'
+    `import {saveToken} from './token'`
+1. At this point the instructor saw that we were saving the token AND setting the headers so decided to move some logic out of the auth.js file and into the init.js file...
 
-    export function rememberToken(token) {
+    So now our init.js which originally was only setting the headers, is going to also save the token, so we add that in:
+
+    ```javascript
+    import axios from 'axios'
+    import { saveToken } from './token'
+
+    const api = axios.create({
+      baseURL: 'http://localhost:7000' //in reality this would be https
+    })
+
+    export function setToken(token){
+      saveToken(token) //call our saveToken function.
+      api.defaults.headers.common['Authorization']= `Bearer ${token}`
+    }
+    
+    export default api
+    ```
+1. At this point, when looking at the auth.js file notice how saveToken and setToken look very visually similar, so one might opt to rename saveToken to something like rememberToken. (for global find and replace in vs code: **Ctrl + Shift + F** or click the magnifying glass on the left side)
+1. Now based on the logic we wrote in our token.js file, we know that it will be capable of handling a null token as a signal to sign out. Remember this code from token.js?
+
+    ```javascript
+    export function saveToken(token) {
       if (token){ 
         localStorage.setItem(key, token)
       }
@@ -865,66 +933,35 @@ import api from './init'
         localStorage.removeItem(key)
       }
     }
+    ```
+    So to facilitate that we will want to amend our init.js code's setToken(token) function to cease sending the token data in the headers of every subsequent request from now on (if the function was called with a token value of null):
 
-    export function getValidToken(){
-      const token = localStorage.getItem(key)
-      try{
-        const decodedToken = decodeJWT(token)
-        //valid token at this point otherwise would have moved to catch
-        const now = Date.now() / 1000
-        //check if token has expired
-        if (now > decodedToken.exp) {
-          return null
-        }
-        return token
-        
-      }
-      catch (error) {
-        return null
-      }
-    }
-
-    export function getDecodedToken() {
-      const validToken = getValidToken()
-      if (validToken){
-        return decodeJWT(validToken)
+    ```javascript
+    export function setToken(token) {
+      saveToken(token)
+      if (token){
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
       }
       else{
-        return null
-      }
-    }
-    ```
-1. amended init.js to :
-    ```javascript
-    import axios from 'axios'
-    import decodeJWT from 'jwt-decode'
-    import { rememberToken, getValidToken } from './token'
-
-    const api = axios.create({
-      baseURL: 'http://localhost:7000' //in reality this would be https
-    })
-
-    export function setToken(token){
-      rememberToken(token) //call our saveToken function.
-      if (token){ //then adjust our default headers based on whether the token was not null
-        api.defaults.headers.common['Authorization']= `Bearer ${token}`
-      }
-      else { //or if the token was null (ie they want to sign OUT)
         delete api.defaults.headers.common['Authorization']
       }
-      //validates the token and if its invalid, remove from local storage
     }
-    setToken(getValidToken())
-
-
-    export default api
     ```
-1. amended auth.js to:
-    ```javascript
-    import api, {setToken} from './init'
-    // import decodeJWT from 'jwt-decode'
-    import { getDecodedToken } from './token'
+1. **Note:**There was some conversation in class regarding the JWT base64 encoding and reasons for that, if you want to hear jump to 1:50:45 of the [screen recording](https://youtu.be/_ZXSCC3SEv4?t=6644)
+1. Now because we have the init setting the token and setting the headers, we've established that that's its responsibility, but our auth.js file needs to be able to use that too so we then amended /web/src/api/auth.js to include the setToken call as well as the api it was originally importing:
 
+    `import api, { setToken } from './init'`
+
+    so now, since this is where we've 'gotten' the token, we can now call that to set it.
+
+    Also since we've now written a function to get a decoded token, we can remove the code here that is also getting a decoded token and replace it with a function call.
+1. Amend your auth.js file to the following:
+
+    ```javascript
+    import api, { setToken } from './init'
+    // import decodeJWT from 'jwt-decode'
+    // import { saveToken } from './token'
+    import { getDecodedToken } from './token'
 
     export function signIn({ email,  password}){
       return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
@@ -932,32 +969,43 @@ import api from './init'
       .then((res) => {
         const token = res.data.token
         setToken(token)
+        // const decodedToken = decodeJWT(token)
+        // return decodedToken
         return getDecodedToken()
-        
-        // return res.data
       })
     }
     ```
-1. at the moment we're manually decoding the token in Auth.js so to remove the duplication between the getDecodedToken function in our token.js file 
-    ```javascript
-    import { saveToken, getDecodedToken } from './token'
-    ...
-    const decodedToken = getDecodedToken()
-    ```
-1. to handle issues where the token is expired. 
-    ```javascript
+1. to handle issues where the token is expired, go back to the init.js file and pull in the getValidToken call:
 
-    ```
-1. amend our initial state to 
+    `import { saveToken, getValidToken } from './token'
+
+    What we do next is within our init.js file, not within any function, we call getValidToken and then with what that returns, immediately call setToken and pass it that. 
+
+    `setToken(getValidToken())`
+
+    **Note: where this lives (in which file) doesn't matter so much as long as it's run upon initialization.**
+1. Now the way our app is, is that upon initialization it initializes its state to have a decodedToken set to null. We can now update that to take advantage of the logic we wrote in the token.js file, so amend these lines of your App.js file:
     ```javascript
     state = {
       decodedToken: getDecodedToken()
     }
     ```
-1. now you can see the token being saved to your local storage by checking storage tab of your developer console in the browser
-1. sessionStorage and localStorage, localStorage is for persistence, session storage is for if they opt-out of 'remember me'
 
-__[[[  the above 5 or so steps need revising, need to go back to the screen recording to record the reasoning behind code changes. ]]]__
+    and don't forget to import that call into your App.js file
+
+    ```javascript
+    import { getDecodedToken } from './api/token'
+    ```
+
+    you can also remove the setToken import from your App.js file as our signIn method is now taking care of that.
+
+    
+1. Now if you test the page in your browser:
+    * in the developer console, in the React tab you can see the decoded information about the token from your app's State.
+    * now you can see the userToken being saved to your local storage by checking storage tab.
+    * if you manually delete the locally stored value you will then be seen as signed out.
+    * if you change its value and attempt to refresh the page you will notice it disappears, that's due to this great line: `setToken(getValidToken())`
+
 ## currently have sign in but no sign out functionality
 1. create a sign out function: in auth.js
     ```javascript
@@ -998,7 +1046,7 @@ __[[[  the above 5 or so steps need revising, need to go back to the screen reco
 1. made a new SignUpForm component
 1. Tried to test the sign up and I suspect I've corrupted the database now by trying an email that was already in use by another user.
 ## MongoError: E11000 duplicate key error collection: storms.users index: username_1 dup key: { : null}
-1. Turns out I couldn't ever create more than one user. because my mongo database had this additional index on the users table called username_1
+1. Turns out I couldn't ever create more than one user because my mongo database had this additional index on the users table called username_1
 
     below is the output from a mongo shell query showing the extra one in the middle:
     ```
@@ -1097,3 +1145,6 @@ __[[[  the above 5 or so steps need revising, need to go back to the screen reco
       }
     ]
     ```
+### So why did that happen?
+
+The most I could find about this is that it is something that is added by the **passport-local-mongoose** package that we use with our user model. However reading the documentation suggests that a flag uniqueUsername or something which governs that behaviour should be set by default to true which should have prevented such a thing from happening, and we didn't set it to anything ourselves manually, so how that "username_1" index came to be set I still don't know. After scrutinising this aspect of my app I realised I had just copy and pasted the mongoose connecting code from my previous app and that's why the database name is 'storms', and that this may have had something to do with the user's table getting that extra index. However Isabelle was also affected by this issue but she actually made a new database for this exercise, also she's using a mac whereas I'm on Linux and we couldn't think of anything our environments had in common so how we came to be affected by this is not known.
