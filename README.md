@@ -544,8 +544,8 @@ If you clone this, to run it you have to:
       background-color: orange;
     }
     ```
-1. add functionality to the button and the form:
-1. we want to preserve log(in our browser's console.) stop the form from submitting as the browser normally does, event.preventDefault() in signinform.js
+1. Add functionality to the button and the form:
+1. We want to preserve log(in our browser's console.) stop the form from submitting as the browser normally does, event.preventDefault() in signinform.js
     ```html
     <form
         onSubmit = {(event)=>{
@@ -574,6 +574,96 @@ If you clone this, to run it you have to:
       }}
     >
     ```
+1. we will make the form pass the results now back up to whatever object rendered the form, (which is our app) and then they will deal with the results. (see below the lines with onSignIn)
+    ```javascript
+    function SignInForm({
+      onSignIn
+    }) {
+      return (
+        <form
+        onSubmit = {(event)=>{
+          //prevent old school form submission
+          event.preventDefault()
+          console.log('form-submitted', event.target)
+          const form = event.target
+          const elements = form.elements //the key value pairs
+          const email = elements.email.value
+          const password = elements.password.value
+          console.log({email, password})
+          onSignIn({email, password})
+        }}>
+        ...
+    ```
+1. Add the handling of the result to your app:
+    ```javascript
+    onSignIn = ({email, password})=>{
+      console.log('App received', {email, password})
+    }
+    ```
+    ```javascript
+    <SignInForm
+      onSignIn = {this.onSignIn}
+    />
+    ```
+1. To test the request we'll need axios inside our web folder:
+```
+cd web
+yarn add axios
+```
+1. then inside the /web/src/api/ folder (still frontend) we want to make a new file called init.js
+```javascript
+  import axios from 'axios'
+
+  const api = axios.create({
+    baseURL: 'http://localhost:7000' //in reality this would be https
+  })
+
+  export default api
+```
+1. then make an auth.js in the same folder:
+```javascript
+import api from './init'
+
+export function signIn({ email,  password}){
+  return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
+  /*the above is shorthand for {email: email, password: password}*/
+  .then((res) => {
+    return res.data
+  })
+}
+```
+1. in App.js add the following import to allow us to use it now
+```javascript
+import { signIn } from './api/auth'
+```
+1. amend the app.js onsignin function to make use of it:
+```javascript
+onSignIn = ({email, password})=>{
+    console.log('App received', {email, password})
+
+    signIn({email, password})
+    .then((data) => {
+      console.log('Signed in:',data) //we expect to see the token returned in the browsers developer console.
+      console.log({email, password})
+    })
+```
+1. at this point if you try to run the app you will get an error, the reason is because you have two servers running on different ports and by default they aren't allowed to talk to each other so we have to add a particular header:
+
+go back to the backend api folder and do
+we need to configure the access contorl **allow origin** header (necessary to allow cross port comms)
+1. `cd api`
+
+    `yarn add cors`
+1. in the server.js: 
+    ```javascript
+    const cors = require('cors')
+    ...
+    server.use(cors()) //Allow other origins to access us (ie react frontend)
+    ```
+
+
+
+
 1. 
 ```javascript
 

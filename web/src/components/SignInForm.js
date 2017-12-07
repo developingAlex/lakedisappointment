@@ -1,11 +1,12 @@
 import React from 'react'
 
 function SignInForm({
-
+  onSignIn
 }) {
   return (
     <form
     onSubmit = {(event)=>{
+      //prevent old school form submission
       event.preventDefault()
       console.log('form-submitted', event.target)
       const form = event.target
@@ -13,6 +14,7 @@ function SignInForm({
       const email = elements.email.value
       const password = elements.password.value
       console.log({email, password})
+      onSignIn({email, password})
     }}>
       <label
         className='mb-2'
