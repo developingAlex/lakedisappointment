@@ -649,8 +649,8 @@ If you clone this, to run it you have to:
     ```
 1. at this point if you try to run the app you will get an error, the reason is because you have two servers running on different ports and by default they aren't allowed to talk to each other so we have to add a particular header:
 
-go back to the backend api folder and do
-we need to configure the access contorl **allow origin** header (necessary to allow cross port comms)
+    go back to the backend api folder and do
+    we need to configure the access contorl **allow origin** header (necessary to allow cross port comms)
 1. `cd api`
 
     `yarn add cors`
