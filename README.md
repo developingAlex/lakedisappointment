@@ -672,26 +672,26 @@ If you clone this, to run it you have to:
     ```
 1. make an /api/products.js file with the following:
 import api from './init'
-
-export function listProducts(){
-  return api.get('/products')
-  .then((res) => res.data)
-}
-
+    ```javascript
+    export function listProducts(){
+      return api.get('/products')
+      .then((res) => res.data)
+    }
+    ```
 1. make a component did mount statement after the render statement in the app.js:
+    ```javascript
+    componentDidMount(){
+      //when this app appears on screen
+      listProducts()
+      .then((products) => {
+        console.log(products)
 
-  componentDidMount(){
-    //when this app appears on screen
-    listProducts()
-    .then((products) => {
-      console.log(products)
-
-    })
-    .catch((error) => {
-      console.error('error loading products', error)
-    })
-  }
-
+      })
+      .catch((error) => {
+        console.error('error loading products', error)
+      })
+    }
+    ```
 1. ensure that you imported that listProducts call at the top of app.js:
 
 import { listProducts } from './api/products';
