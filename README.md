@@ -660,8 +660,65 @@ If you clone this, to run it you have to:
     ...
     server.use(cors()) //Allow other origins to access us (ie react frontend)
     ```
+1. now at the state where a valid login will recieve a valid JWT. Now how to make it so that the frontend browser makes use of that when requesting subsequent pages
+1. referring to the axios docs, you can pass in headers, like the bearer [token] one used in the check.http
+1. but we are wanting to change the defaults so that any future axios requests will have that header in place.
+1. we can just use one line like 'ourinstance.common.headers...'
+1. in the init.js file (in web) :
+    ```javascript
+    export function setToken(token){
+      api.defaults.headers.common['Authorization']= `Bearer ${token}`
+    }
+    ```
+1. make an /api/products.js file with the following:
+import api from './init'
 
+export function listProducts(){
+  return api.get('/products')
+  .then((res) => res.data)
+}
 
+1. make a component did mount statement after the render statement in the app.js:
+
+  componentDidMount(){
+    //when this app appears on screen
+    listProducts()
+    .then((products) => {
+      console.log(products)
+
+    })
+    .catch((error) => {
+      console.error('error loading products', error)
+    })
+  }
+
+1. ensure that you imported that listProducts call at the top of app.js:
+
+import { listProducts } from './api/products';
+1. at this stage it still won't work because we're not passing back any authorization header.
+1. amend the onSignIn function in the app.js to :
+    ```javascript
+    onSignIn = ({email, password})=>{
+      console.log('App received', {email, password})
+
+      signIn({email, password})
+      .then((data) => {
+        console.log('Signed in:',data)
+        console.log({email, password})
+        const token = data.token
+        setToken(token) //now all future requests will have the authorization header set.
+        listProducts() //try to list the products now with the token set:
+        .then((products) => {
+          console.log(products)
+    
+        })
+        .catch((error) => {
+          console.error('error loading products', error)
+        })
+      })
+    }
+    ```
+1. 
 
 
 1. 
