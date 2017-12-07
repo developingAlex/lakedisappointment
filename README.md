@@ -606,47 +606,47 @@ If you clone this, to run it you have to:
     />
     ```
 1. To test the request we'll need axios inside our web folder:
-```
-cd web
-yarn add axios
-```
+    ```
+    cd web
+    yarn add axios
+    ```
 1. then inside the /web/src/api/ folder (still frontend) we want to make a new file called init.js
-```javascript
-  import axios from 'axios'
+    ```javascript
+      import axios from 'axios'
 
-  const api = axios.create({
-    baseURL: 'http://localhost:7000' //in reality this would be https
-  })
+      const api = axios.create({
+        baseURL: 'http://localhost:7000' //in reality this would be https
+      })
 
-  export default api
-```
+      export default api
+    ```
 1. then make an auth.js in the same folder:
-```javascript
-import api from './init'
+    ```javascript
+    import api from './init'
 
-export function signIn({ email,  password}){
-  return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
-  /*the above is shorthand for {email: email, password: password}*/
-  .then((res) => {
-    return res.data
-  })
-}
-```
+    export function signIn({ email,  password}){
+      return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
+      /*the above is shorthand for {email: email, password: password}*/
+      .then((res) => {
+        return res.data
+      })
+    }
+    ```
 1. in App.js add the following import to allow us to use it now
-```javascript
-import { signIn } from './api/auth'
-```
+    ```javascript
+    import { signIn } from './api/auth'
+    ```
 1. amend the app.js onsignin function to make use of it:
-```javascript
-onSignIn = ({email, password})=>{
-    console.log('App received', {email, password})
+    ```javascript
+    onSignIn = ({email, password})=>{
+        console.log('App received', {email, password})
 
-    signIn({email, password})
-    .then((data) => {
-      console.log('Signed in:',data) //we expect to see the token returned in the browsers developer console.
-      console.log({email, password})
-    })
-```
+        signIn({email, password})
+        .then((data) => {
+          console.log('Signed in:',data) //we expect to see the token returned in the browsers developer console.
+          console.log({email, password})
+        })
+    ```
 1. at this point if you try to run the app you will get an error, the reason is because you have two servers running on different ports and by default they aren't allowed to talk to each other so we have to add a particular header:
 
 go back to the backend api folder and do
