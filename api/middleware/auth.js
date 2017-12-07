@@ -8,6 +8,7 @@ const PassportJwt = require('passport-jwt')
 
 
 passport.use(User.createStrategy())
+
 function register(req, res, next) {
     //create a new user model from the submitted data
    const user = new User({

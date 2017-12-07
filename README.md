@@ -610,7 +610,7 @@ If you clone this, to run it you have to:
     cd web
     yarn add axios
     ```
-1. then inside the /web/src/api/ folder (still frontend) we want to make a new file called init.js
+1. Then inside the /web/src/api/ folder (still frontend) we want to make a new file called init.js
     ```javascript
       import axios from 'axios'
 
@@ -620,7 +620,7 @@ If you clone this, to run it you have to:
 
       export default api
     ```
-1. then make an auth.js in the same folder:
+1. Then make an auth.js in the same folder:
     ```javascript
     import api from './init'
 
@@ -632,11 +632,11 @@ If you clone this, to run it you have to:
       })
     }
     ```
-1. in App.js add the following import to allow us to use it now
+1. In App.js add the following import to allow us to use it now
     ```javascript
     import { signIn } from './api/auth'
     ```
-1. amend the app.js onsignin function to make use of it:
+1. Amend the app.js onsignin function to make use of it:
     ```javascript
     onSignIn = ({email, password})=>{
         console.log('App received', {email, password})
@@ -647,7 +647,7 @@ If you clone this, to run it you have to:
           console.log({email, password})
         })
     ```
-1. at this point if you try to run the app you will get an error, the reason is because you have two servers running on different ports and by default they aren't allowed to talk to each other so we have to add a particular header:
+1. At this point if you try to run the app you will get an error, the reason is because you have two servers running on different ports and by default they aren't allowed to talk to each other so we have to add a particular header:
 
     we need to configure the access control **allow origin** header (necessary to allow cross port comms)
 
@@ -655,23 +655,23 @@ If you clone this, to run it you have to:
 1. `cd api`
 
     `yarn add cors`
-1. in the server.js: 
+1. In the server.js: 
     ```javascript
     const cors = require('cors')
     ...
     server.use(cors()) //Allow other origins to access us (ie react frontend)
     ```
-1. now at the state where a valid login will recieve a valid JWT. Now how to make it so that the frontend browser makes use of that when requesting subsequent pages
-1. referring to the axios docs, you can pass in headers, like the bearer [token] one used in the check.http
-1. but we are wanting to change the defaults so that any future axios requests will have that header in place.
-1. we can just use one line like 'ourinstance.common.headers...'
-1. in the init.js file (in web) :
+1. Now at the state where a valid login will recieve a valid JWT. Now how to make it so that the frontend browser makes use of that when requesting subsequent pages
+1. Referring to the axios docs, you can pass in headers, like the bearer [token] one used in the check.http
+1. But we are wanting to change the defaults so that any future axios requests will have that header in place.
+1. We can just use one line like 'ourinstance.common.headers...'
+1. In the init.js file (in web) :
     ```javascript
     export function setToken(token){
       api.defaults.headers.common['Authorization']= `Bearer ${token}`
     }
     ```
-1. make an /api/products.js file with the following:
+1. Make an /api/products.js file with the following:
 import api from './init'
     ```javascript
     export function listProducts(){
@@ -679,7 +679,7 @@ import api from './init'
       .then((res) => res.data)
     }
     ```
-1. make a component did mount statement after the render statement in the app.js:
+1. Make a component did mount statement after the render statement in the app.js:
     ```javascript
     componentDidMount(){
       //when this app appears on screen
@@ -693,11 +693,12 @@ import api from './init'
       })
     }
     ```
-1. ensure that you imported that listProducts call at the top of app.js:
-
-import { listProducts } from './api/products';
-1. at this stage it still won't work because we're not passing back any authorization header.
-1. amend the onSignIn function in the app.js to :
+1. Ensure that you imported that listProducts call at the top of app.js:
+    ```javascript
+    import { listProducts } from './api/products';
+    ```
+1. At this stage it still won't work because we're not passing back any authorization header.
+1. Amend the onSignIn function in the app.js to :
     ```javascript
     onSignIn = ({email, password})=>{
       console.log('App received', {email, password})
@@ -719,14 +720,380 @@ import { listProducts } from './api/products';
       })
     }
     ```
-1. 
+1. Next task is to change behaviour upon sign in, for that we need to keep track of state.
+1. add a state variable to your app.js at the top of the class:
+    ```javascript
+    state = {
+      decodedToken: null
+    }
+    ```
+1. using JWT decode to decode the base64 payload 
+
+    `cd web`
+
+    `yarn add jwt-decode`
+1. we wand our sign in method to return the jwt token
+1. create a new token.js file in /src/api to handle all the jwt token stuff
+1. add to the auth.js file:
+
+    `import decodeJWT from 'jwt-decode'`
+1. Auth.js now looks like:
+    ```javascript
+    import api from './init'
+
+    import decodeJWT from 'jwt-decode'
+    export function signIn({ email,  password}){
+      return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
+      /*the above is shorthand for {email: email, password: password}*/
+      .then((res) => {
+        const token = res.data.token
+        const decodedToken = decodeJWT(token)
+        return decodedToken
+        // return res.data
+      })
+    }
+    ```
+1. amend the onsignin function to the following:
+    ```javascript
+      onSignIn = ({email, password})=>{
+        console.log('App received', {email, password})
+
+        signIn({email, password})
+        .then((decodedToken) => {
+          console.log('Signed in:',decodedToken)
+          this.setState({decodedToken})
+        })
+      }
+    ```
+1. Amend the render method as follows:
+    ```javascript
+    render() {
+        const { decodedToken } = this.state
+        return (
+          <div className="App">
+            <header className="App-header">
+              <h1 className="App-title">Welcome to Lake Disappointment</h1>
+            </header>
+            <p className="App-intro">
+              Now delivering, shipping millions of new products
+            </p>
+            {
+              !!decodedToken ? (
+                <p>Email: { decodedToken.email } </p>
+
+              ) : (
+                <SignInForm
+                  onSignIn = {this.onSignIn}
+                />
+              )
+
+            }
+          </div>
+        );
+      }
+    ```
+1. In the conditional above for a decoded token where currently we're just displaying the user's email, the below is an example of some other information we may like to display:
+    ```javascript
+    <p> Signed in at { new Date(decodedToken.iat*1000).toISOString() }</p>
+    <p> session expires at { new Date(decodedToken.exp*1000).toISOString() }</p>
+    ```
+1. At this point if the browser is refreshed, the session is lost, if we want the session to persist, we need to look into storing the token on the user's browser
+
+    look up mozilla dev network docs: API/Window/localStorage for some information about that.
+1. In our /web/src/api/token.js file
+    ```javascript
+    const key = 'userToken'
+
+    export function saveToken(token) {
+      if (token){ 
+        localStorage.setItem(key, token)
+      }
+      else{ //if no token is supplied, take it as a sign out.
+        localStorage.removeItem(key)
+      }
+    }
+
+    export function getToken(){
+      const token = localStorage.getItem(key)
+    }
+    ```
+1. We want to consider if the token on the users computer becomes corrupted or not?
+1. we want an ability to know if the token is valid or not:
+    ```javascript
+    export function getValidToken(){
+      const token = localStorage.getItem(key)
+      try{
+        const decodedToken = decodeJWT(token)
+        //valid token at this point otherwise would have moved to catch
+        const now = Date.now() / 1000
+        //check if token has expired
+        if (now > decodedToken.exp) {
+          return null
+        }
+        return token
+        
+      }
+      catch (error) {
+        return null
+      }
+    }
+    ```
+1. the above is a good way to handle it because it encapsulates all the logic into that token file and the rest of the program doesn't need to know how that token is stored or retrieved.
+1. We also want to have a function to get the decoded token:
+    ```javascript
+    export function getDecodedToken() {
+      const validToken = getValidToken()
+      if (validToken){
+        return decodeJWT(validToken)
+      }
+      else{
+        return null
+      }
+    }
+    ```
+1. the token.js file now looks like:
+    ```javascript
+    import decodeJWT from 'jwt-decode'
+
+    const key = 'userToken'
+
+    export function rememberToken(token) {
+      if (token){ 
+        localStorage.setItem(key, token)
+      }
+      else{ //if no token is supplied, take it as a sign out.
+        localStorage.removeItem(key)
+      }
+    }
+
+    export function getValidToken(){
+      const token = localStorage.getItem(key)
+      try{
+        const decodedToken = decodeJWT(token)
+        //valid token at this point otherwise would have moved to catch
+        const now = Date.now() / 1000
+        //check if token has expired
+        if (now > decodedToken.exp) {
+          return null
+        }
+        return token
+        
+      }
+      catch (error) {
+        return null
+      }
+    }
+
+    export function getDecodedToken() {
+      const validToken = getValidToken()
+      if (validToken){
+        return decodeJWT(validToken)
+      }
+      else{
+        return null
+      }
+    }
+    ```
+1. amended init.js to :
+    ```javascript
+    import axios from 'axios'
+    import decodeJWT from 'jwt-decode'
+    import { rememberToken, getValidToken } from './token'
+
+    const api = axios.create({
+      baseURL: 'http://localhost:7000' //in reality this would be https
+    })
+
+    export function setToken(token){
+      rememberToken(token) //call our saveToken function.
+      if (token){ //then adjust our default headers based on whether the token was not null
+        api.defaults.headers.common['Authorization']= `Bearer ${token}`
+      }
+      else { //or if the token was null (ie they want to sign OUT)
+        delete api.defaults.headers.common['Authorization']
+      }
+      //validates the token and if its invalid, remove from local storage
+    }
+    setToken(getValidToken())
 
 
-1. 
-```javascript
+    export default api
+    ```
+1. amended auth.js to:
+    ```javascript
+    import api, {setToken} from './init'
+    // import decodeJWT from 'jwt-decode'
+    import { getDecodedToken } from './token'
 
-```
-1. 
-```javascript
 
-```
+    export function signIn({ email,  password}){
+      return api.post('/auth', {email, password}) //returning api.post because we want it accessible outside the function.
+      /*the above is shorthand for {email: email, password: password}*/
+      .then((res) => {
+        const token = res.data.token
+        setToken(token)
+        return getDecodedToken()
+        
+        // return res.data
+      })
+    }
+    ```
+1. at the moment we're manually decoding the token in Auth.js so to remove the duplication between the getDecodedToken function in our token.js file 
+    ```javascript
+    import { saveToken, getDecodedToken } from './token'
+    ...
+    const decodedToken = getDecodedToken()
+    ```
+1. to handle issues where the token is expired. 
+    ```javascript
+
+    ```
+1. amend our initial state to 
+    ```javascript
+    state = {
+      decodedToken: getDecodedToken()
+    }
+    ```
+1. now you can see the token being saved to your local storage by checking storage tab of your developer console in the browser
+1. sessionStorage and localStorage, localStorage is for persistence, session storage is for if they opt-out of 'remember me'
+
+__[[[  the above 5 or so steps need revising, need to go back to the screen recording to record the reasoning behind code changes. ]]]__
+## currently have sign in but no sign out functionality
+1. create a sign out function: in auth.js
+    ```javascript
+    export function signOutNow(){
+      setToken(null)
+    }
+    ```
+1. import signOut to app.js
+    ```javascript
+    import { signIn, signOutNow } from './api/auth'
+    ```
+1. Add a sign out button to app.js
+    ```javascript
+    <button onClick = { this.onSignOut }>
+    Sign Out
+    </button>
+    ```
+1. and link the button to a function in your app class:
+    ```javascript
+    onSignOut = () => {
+      signOutNow()
+      this.setState({ decodedToken: null})
+    }
+    ```
+
+## Moving onto working individually on some challenges
+# Challenges
+1. Sign up form
+2. Add product listing to React
+3. Add create product to API
+4. Add create product form to React
+5. Add update product to API
+6. Add edit product form to React
+
+(commit 560f79b860bc209d87032d9268f7f1f1f24d0666 is where I begin on working on the challenges)
+
+# Steps I've taken (and struggles) to implement the challenges
+1. made a new SignUpForm component
+1. Tried to test the sign up and I suspect I've corrupted the database now by trying an email that was already in use by another user.
+## MongoError: E11000 duplicate key error collection: storms.users index: username_1 dup key: { : null}
+1. Turns out I couldn't ever create more than one user. because my mongo database had this additional index on the users table called username_1
+
+    below is the output from a mongo shell query showing the extra one in the middle:
+    ```
+    > db.users.getIndexes()
+    [
+      {
+        "v" : 2,
+        "key" : {
+          "_id" : 1
+        },
+        "name" : "_id_",
+        "ns" : "storms.users"
+      },
+      {
+        "v" : 2,
+        "unique" : true,
+        "key" : {
+          "username" : 1
+        },
+        "name" : "username_1",
+        "ns" : "storms.users",
+        "background" : true
+      },
+      {
+        "v" : 2,
+        "unique" : true,
+        "key" : {
+          "email" : 1
+        },
+        "name" : "email_1",
+        "ns" : "storms.users",
+        "background" : true
+      }
+    ]
+
+    ```
+    This was resulting in the following error message from the server when attempting to create a new user:
+    ```
+    MongoError: E11000 duplicate key error collection: storms.users index: username_1 dup key: { : null}
+    at Function.MongoError.create (/home/alex/apps/js/lakedisappointment/api/node_modules/mongodb-core/lib/error.js:31:11)
+    at toError (/home/alex/apps/js/lakedisappointment/api/node_modules/mongodb/lib/utils.js:139:22)
+    at /home/alex/apps/js/lakedisappointment/api/node_modules/mongodb/lib/collection.js:668:23
+    at handleCallback (/home/alex/apps/js/lakedisappointment/api/node_modules/mongodb/lib/utils.js:120:56)
+    at /home/alex/apps/js/lakedisappointment/api/node_modules/mongodb/lib/bulk/unordered.js:465:9
+    at handleCallback (/home/alex/apps/js/lakedisappointment/api/node_modules/mongodb/lib/utils.js:120:56)
+    at resultHandler (/home/alex/apps/js/lakedisappointment/api/node_modules/mongodb/lib/bulk/unordered.js:413:5)
+    ```
+    The solution was to go and tell Mongo to not put an index on this username field by doing the following ([stackoverflow question on this topic](https://stackoverflow.com/questions/13454178/mongoerror-erre11000-duplicate-key-error))
+    
+    In a terminal execute the following
+
+    `mongo`
+
+    you can see the [documentation of mongo here](https://docs.mongodb.com/manual/core/databases-and-collections/#collections)
+
+    you can check what database this app was using by looking at api/models/init.js and checking the mongoose connect line:
+    ```javascript
+    mongoose.connect(
+      'mongodb://localhost/storms',
+      { useMongoClient: true }
+    )
+    ```
+    That means that I'm using a database called storms (probably because I copy and pasted this code from the previous exercise)
+
+    In the mongo terminal you can then list the databases with
+
+    `show dbs`
+
+    then switch to the storms one with
+
+    `use storms`
+
+    then list the 'collections' aka tables of that db with:
+
+    `show collections`
+
+    then list the indexes on the users table
+
+    `db.users.getIndexes()`
+
+    then in my case I solved it quickly by executing:
+
+    `db.users.dropIndexes()`
+
+    Now my indexes on my users' collection just looks like this:
+    ```
+    > db.users.getIndexes()
+    [
+      {
+        "v" : 2,
+        "key" : {
+          "_id" : 1
+        },
+        "name" : "_id_",
+        "ns" : "storms.users"
+      }
+    ]
+    ```
