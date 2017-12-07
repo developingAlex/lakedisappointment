@@ -49,7 +49,7 @@ class App extends Component {
             </div>
           ) : (
             <SignInForm
-              onSignIn = {this.onSignIn}
+              onSignIn = { this.onSignIn }
             />
           )
 

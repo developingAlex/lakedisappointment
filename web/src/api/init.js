@@ -16,6 +16,7 @@ export function setToken(token){
   }
   //validates the token and if its invalid, remove from local storage
 }
+
 setToken(getValidToken())
 
 
