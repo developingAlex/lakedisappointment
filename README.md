@@ -1213,240 +1213,237 @@ to then used .map to find the product in the list that was updated, and if it wa
 
 and then finally sets the states activeProductId back to null.
 
-# following along
+# following along to make a wishlist functionality where users can maintain a wishlist of products (demonstrates how to manage database relationships)
 
-create a new model called wishlist initially a copy paste of the models/product.js code
+1. create a new model called wishlist initially a copy paste of the models/product.js code
+    ```javascript
+    const mongoose = require('./init')
+    const Schema = mongoose.Schema
 
-```javascript
-const mongoose = require('./init')
-const Schema = mongoose.Schema
+    // similar to :
+    // t.references :owner, foreign_key: {to_table: :users}
 
-// similar to :
-// t.references :owner, foreign_key: {to_table: :users}
+    const Wishlist = mongoose.model('Wishlist', {
+      user: { type: Schema.ObjectId, ref: 'User' },
+      name: String
+    })
 
-const Wishlist = mongoose.model('Wishlist', {
-  user: { type: Schema.ObjectId, ref: 'User' },
-  name: String
-})
+    module.exports = Wishlist
+    ```
 
-module.exports = Wishlist
-```
+    ```javascript
+    const mongoose = require('./init')
+    const Schema = mongoose.Schema
 
-```
-const mongoose = require('./init')
-const Schema = mongoose.Schema
+    // similar to :
+    // t.references :owner, foreign_key: {to_table: :users}
+    //what comes after the .model in the below line, is the schema.
 
-// similar to :
-// t.references :owner, foreign_key: {to_table: :users}
-//what comes after the .model in the below line, is the schema.
+    const Wishlist = mongoose.model('Wishlist', {
+      user: { type: Schema.ObjectId, ref: 'User', unique: true },
+      //unique true so that each user will only have ONE wishlist.
+      //one wishlist will have multiple products, we do that by wrapping it in square brackets
+      products: [{type: Schema.ObjectId, ref: 'Product'}],
+      name: String
+    })
 
-const Wishlist = mongoose.model('Wishlist', {
-  user: { type: Schema.ObjectId, ref: 'User', unique: true },
-  //unique true so that each user will only have ONE wishlist.
-  //one wishlist will have multiple products, we do that by wrapping it in square brackets
-  products: [{type: Schema.ObjectId, ref: 'Product'}],
-  name: String
-})
+    module.exports = Wishlist
+    ```
 
-module.exports = Wishlist
-```
+1. next up is routes for the wishlist:
 
-next up is routes for the wishlist:
+    copy the products routes file and then edit it to change it to be about wishlists with a couple tweaks:
+    ```javascript
+    const express = require('express')
+    const Wishlist = require('../models/Wishlist')
+    // const authMiddleWare = require('../middleware/auth')
+    const { requireJWT } = require('../middleware/auth')
+    const router = new express.Router()
 
-copy the products routes file and then edit it to change it to be about wishlists with a couple tweaks:
+    router.get('/wishlist', requireJWT, (req, res) => {
+      
+      // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+      Wishlist.findOne({user: req.user })
+      .then((wishlist) => {
+        res.status(200).json({wishlist})
+      })
+      .catch((error)=> {
+        res.status(400).json({error: error.message}) //if you return the whole error you may be giving away too much information
+      })
+    })
 
-```
-const express = require('express')
-const Wishlist = require('../models/Wishlist')
-// const authMiddleWare = require('../middleware/auth')
-const { requireJWT } = require('../middleware/auth')
-const router = new express.Router()
+    module.exports = router
+    ```
+1. we changed it to error code 500 for internal server error as it wouldn't be the users fault in this case.
+    ```javascript
+    const express = require('express')
+    const Wishlist = require('../models/Wishlist')
+    // const authMiddleWare = require('../middleware/auth')
+    const { requireJWT } = require('../middleware/auth')
+    const router = new express.Router()
 
-router.get('/wishlist', requireJWT, (req, res) => {
-  
-  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
-  Wishlist.findOne({user: req.user })
-  .then((wishlist) => {
-    res.status(200).json({wishlist})
-  })
-  .catch((error)=> {
-    res.status(400).json({error: error.message}) //if you return the whole error you may be giving away too much information
-  })
-})
+    router.get('/wishlist', requireJWT, (req, res) => {
+      
+      // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+      Wishlist.findOne({user: req.user })
+      .then((wishlist) => {
+        res.status(200).json({wishlist})
+      })
+      .catch((error)=> {
+        res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
+      })
+    })
 
-module.exports = router
-```
-we changed it to error code 500 for internal server error as it wouldn't be the users fault in this case.
-```
-const express = require('express')
-const Wishlist = require('../models/Wishlist')
-// const authMiddleWare = require('../middleware/auth')
-const { requireJWT } = require('../middleware/auth')
-const router = new express.Router()
+    module.exports = router
+    ```
+    remember to add require('./routes/wishlists'), to your server.use array in server.js
 
-router.get('/wishlist', requireJWT, (req, res) => {
-  
-  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
-  Wishlist.findOne({user: req.user })
-  .then((wishlist) => {
-    res.status(200).json({wishlist})
-  })
-  .catch((error)=> {
-    res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
-  })
-})
+1. now make a test GET method in the check.http file, but first you will have to make the post request to authenticate so you can grab a copy of the token then you can make a post request like this:
+    ```
+    ###
 
-module.exports = router
-```
-remember to add require('./routes/wishlists'), to your server.use array in server.js
+    GET http://localhost:7000/wishlist
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+    ###
+    ```
 
-now make a test GET method in the check.http file, but first you will have to make the post request to authenticate so you can grab a copy of the token then you can make a post request like this:
-```
-###
+1. make the wishlist return the products in itself:
 
-GET http://localhost:7000/wishlist
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
-###
-```
+    ```javascript
+    const express = require('express')
+    const Wishlist = require('../models/Wishlist')
+    // const authMiddleWare = require('../middleware/auth')
+    const { requireJWT } = require('../middleware/auth')
+    const router = new express.Router()
 
-make the wishlist return the products in itself:
+    router.get('/wishlist', requireJWT, (req, res) => {
+      
+      // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+      Wishlist.findOne({user: req.user })
+      .then((wishlist) => {
+        if (wishlist) {
+          res.status(200).json({products: wishlist.products})
+        }
+      })
+      .catch((error)=> {
+        res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
+      })
+    })
 
-```
-const express = require('express')
-const Wishlist = require('../models/Wishlist')
-// const authMiddleWare = require('../middleware/auth')
-const { requireJWT } = require('../middleware/auth')
-const router = new express.Router()
+    
+    module.exports = router
+    ```
 
-router.get('/wishlist', requireJWT, (req, res) => {
-  
-  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
-  Wishlist.findOne({user: req.user })
-  .then((wishlist) => {
-    if (wishlist) {
-      res.status(200).json({products: wishlist.products})
-    }
-  })
-  .catch((error)=> {
-    res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
-  })
-})
+1. and return an empty array otherwise:
+    ```javascript
+    const express = require('express')
+    const Wishlist = require('../models/Wishlist')
+    // const authMiddleWare = require('../middleware/auth')
+    const { requireJWT } = require('../middleware/auth')
+    const router = new express.Router()
 
+    router.get('/wishlist', requireJWT, (req, res) => {
+      
+      // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+      Wishlist.findOne({user: req.user })
+      .then((wishlist) => {
+        if (wishlist) {
+          res.status(200).json({products: wishlist.products})
+        }
+        else {
+          res.status(200).json({products: []})
+        }
+      })
+      .catch((error)=> {
+        res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
+      })
+    })
+
+    
+    module.exports = router
+    ```
+
+1. We do it this way, in the backend, so that the client side doesn't have to have as much logic about how to handle a possible null response
+
+1. moving onto handling the post from a user to add a product to the wishlist:
+
+    ```javascript
+
+    router.post('/wishlist/products/:productID', (req, res) => {
+      const { productID } = req.params
+      
+    })
+    ```
  
-module.exports = router
-```
+1. going to use the findOneAndUpdate to make the update.
 
-and return an empty array otherwise:
-```
-const express = require('express')
-const Wishlist = require('../models/Wishlist')
-// const authMiddleWare = require('../middleware/auth')
-const { requireJWT } = require('../middleware/auth')
-const router = new express.Router()
-
-router.get('/wishlist', requireJWT, (req, res) => {
-  
-  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
-  Wishlist.findOne({user: req.user })
-  .then((wishlist) => {
-    if (wishlist) {
-      res.status(200).json({products: wishlist.products})
-    }
-    else {
-      res.status(200).json({products: []})
-    }
-  })
-  .catch((error)=> {
-    res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
-  })
-})
-
- 
-module.exports = router
-```
-
-We do it this way, in the backend, so that the client side doesn't have to have as much logic about how to handle a possible null response
-
-moving onto handling the post from a user to add a product to the wishlist:
-
-```
-
-router.post('/wishlist/products/:productID', (req, res) => {
-  const { productID } = req.params
-  
-})
-```
- 
-going to use the findOneAndUpdate to make the update.
-
-```
-router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
-  const { productID } = req.params
-  Wishlist.findOneAndUpdate({ user: req.user }, {
-    // change to come soon 
-  },
-  { 
-    upsert: true, runValidators: true //upsert = update and insert
-  })
-})
-```
-Add the code to make the change for us using $addToSet
-```
-
-router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
-  const { productID } = req.params
-  Wishlist.findOneAndUpdate(
-    { 
-      user: req.user 
-    }, 
-    {
-      //make the changes
-      // https://docs.mongodb.com/manual/reference/operator/update/addToSet/
-      $addToSet: {products: productID}
-    },
-    { 
-      upsert: true, runValidators: true //upsert = update and insert
+    ```javascript
+    router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
+      const { productID } = req.params
+      Wishlist.findOneAndUpdate({ user: req.user }, {
+        // change to come soon 
+      },
+      { 
+        upsert: true, runValidators: true //upsert = update and insert
+      })
     })
-})
-```
-```
-
-router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
-  const { productID } = req.params
-  Wishlist.findOneAndUpdate(
-    { 
-      user: req.user 
-    }, 
-    {
-      //make the changes
-      // https://docs.mongodb.com/manual/reference/operator/update/addToSet/
-      $addToSet: {products: productID}
-    },
-    { 
-      upsert: true, new:true, runValidators: true //upsert = update and insert
+    ```
+1. Add the code to make the change for us using $addToSet
+    ```javascript
+    router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
+      const { productID } = req.params
+      Wishlist.findOneAndUpdate(
+        { 
+          user: req.user 
+        }, 
+        {
+          //make the changes
+          // https://docs.mongodb.com/manual/reference/operator/update/addToSet/
+          $addToSet: {products: productID}
+        },
+        { 
+          upsert: true, runValidators: true //upsert = update and insert
+        })
     })
-    .then((wishlist) => {
-      res.json({products: wishlist.products })
+    ```
+
+    ```
+    router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
+      const { productID } = req.params
+      Wishlist.findOneAndUpdate(
+        { 
+          user: req.user 
+        }, 
+        {
+          //make the changes
+          // https://docs.mongodb.com/manual/reference/operator/update/addToSet/
+          $addToSet: {products: productID}
+        },
+        { 
+          upsert: true, new:true, runValidators: true //upsert = update and insert
+        })
+        .then((wishlist) => {
+          res.json({products: wishlist.products })
+        })
+        .catch ((error) => {
+          res.status(400).json({error: error.message})
+        })
     })
-    .catch ((error) => {
-      res.status(400).json({error: error.message})
-    })
-})
-```
+    ```
 
-now to add a test to your check.http with a valid and invalid product id.
+1. now to add a test to your check.http with a valid and invalid product id.
 
-and you can see that the check will fail if we pass as an id 'robot' but it will pass if we pass what looks like a valid id: 
-below the one ending in 222 doesn't correspond to anything in the database but that request is still honored.
-```
+    and you can see that the check will fail if we pass as an id 'robot' but it will pass if we pass what looks like a valid id: 
+    below the one ending in 222 doesn't correspond to anything in the database but that request is still honored.
+    ```
 
-POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d222
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+    POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d222
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
 
-###
+    ###
 
-POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d16b
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+    POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d16b
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
 
-###
-```
+    ###
+    ```
