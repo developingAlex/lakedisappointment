@@ -1,21 +1,15 @@
 import React from 'react'
 import Product from './Product'
 
-function Wishlist({
+function ProductList({
   products
 }) {
-  if (products) {
-
-    console.log('what is products when it crashes?')
-    console.log(products)
-  }
   return(
     <div className='mb-3'>
       {
         products ? (
-          
           <div>
-            <h2 className='mb-2 wishlistheader'> 🎀 Your Wishlist 🎀 </h2>
+            <h2 className='mb-2'> Available Products: </h2>
             {
               products.map((product) => (
                 <Product
@@ -25,11 +19,14 @@ function Wishlist({
             }
           </div>
         ) : (
-          <h3> Nothing in your wishlist yet </h3>
+          <fragment>
+            <h2> We are currently stocking the shelves!</h2>
+            <h3> Please visit again soon&hellip; </h3>
+          </fragment>
         )
       }
     </div>
   )
 }
 
-export default Wishlist
+export default ProductList

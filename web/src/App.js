@@ -4,9 +4,10 @@ import './App.css';
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
 import Wishlist from './components/Wishlist'
+import ProductList from './components/ProductList'
 import { signIn, signUp, signOutNow } from './api/auth'
 import { listProducts, listWishlistProducts } from './api/products';
-import {setToken} from './api/init'
+// import {setToken} from './api/init'
 import {getDecodedToken} from './api/token'
 
 class App extends Component {
@@ -47,17 +48,20 @@ class App extends Component {
           <h1 className="App-title">Welcome to Lake Disappointment</h1>
         </header>
         <p className="App-intro">
-          Now delivering, shipping millions of new products
+          Now delivering! shipping millions of new products!
         </p>
         {
           !!decodedToken ? (
-            <div>
+            <div className="pad-2">
               <p>Email: { decodedToken.email } </p>
               <p> Signed in at { new Date(decodedToken.iat*1000).toISOString() }</p>
               <p> session expires at { new Date(decodedToken.exp*1000).toISOString() }</p>
               <button onClick = { this.onSignOut }>
               Sign Out
               </button>
+              <ProductList
+                {...products}
+              />
               <Wishlist
                 {...wishListProducts}
               />

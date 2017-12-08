@@ -1,5 +1,5 @@
 import axios from 'axios'
-import decodeJWT from 'jwt-decode'
+// import decodeJWT from 'jwt-decode'
 import { rememberToken, getValidToken } from './token'
 
 const api = axios.create({
