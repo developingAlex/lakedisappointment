@@ -156,7 +156,7 @@ If you clone this, to run it you have to:
     GET http://localhost:7000/products
 
     ###
-    GET http://localhost:7000/...
+    GET http://localhost:7000/…
     ```
 1. Add the line to your server.js file so that it knows about the routes.
     ```javascript
@@ -592,7 +592,7 @@ If you clone this, to run it you have to:
           console.log({email, password})
           onSignIn({email, password})
         }}>
-        ...
+        …
     ```
 1. Add the handling of the result to your app:
     ```javascript
@@ -658,13 +658,13 @@ If you clone this, to run it you have to:
 1. In the server.js: 
     ```javascript
     const cors = require('cors')
-    ...
+    …
     server.use(cors()) //Allow other origins to access us (ie react frontend)
     ```
 1. Now at the state where a valid login will recieve a valid JWT. Now how to make it so that the frontend browser makes use of that when requesting subsequent pages
 1. Referring to the axios docs, you can pass in headers, like the bearer [token] one used in the check.http
 1. But we are wanting to change the defaults so that any future axios requests will have that header in place.
-1. We can just use one line like 'ourinstance.common.headers...'
+1. We can just use one line like 'ourinstance.common.headers…'
 1. In the init.js file (in web) :
     ```javascript
     export function setToken(token){
@@ -902,7 +902,7 @@ import api from './init'
 1. Now that we've made the token file full of its helper functions we want to make use of it in our /web/src/api/auth.js file so import it
 
     `import {saveToken} from './token'`
-1. At this point the instructor saw that we were saving the token AND setting the headers so decided to move some logic out of the auth.js file and into the init.js file...
+1. At this point the instructor saw that we were saving the token AND setting the headers so decided to move some logic out of the auth.js file and into the init.js file…
 
     So now our init.js which originally was only setting the headers, is going to also save the token, so we add that in:
 
@@ -1148,6 +1148,7 @@ import api from './init'
 ### So why did that happen?
 
 The most I could find about this is that it is something that is added by the **passport-local-mongoose** package that we use with our user model. However reading the documentation suggests that a flag uniqueUsername or something which governs that behaviour should be set by default to true which should have prevented such a thing from happening, and we didn't set it to anything ourselves manually, so how that "username_1" index came to be set I still don't know. After scrutinising this aspect of my app I realised I had just copy and pasted the mongoose connecting code from my previous app and that's why the database name is 'storms', and that this may have had something to do with the user's table getting that extra index. However Isabelle was also affected by this issue but she actually made a new database for this exercise, also she's using a mac whereas I'm on Linux and we couldn't think of anything our environments had in common so how we came to be affected by this is not known.
+**Update: there were at least another two people affected by this issue but we couldn't figure out the cause**
 
 # Instructors solutions to the challenges:
 ## listing the products
@@ -1475,7 +1476,6 @@ and then finally sets the states activeProductId back to null.
         })
     })
     ```
-
 1. then test in your check.http file :
 
     ```
@@ -1497,7 +1497,17 @@ and then finally sets the states activeProductId back to null.
       .populate('products')
       .then((wishlist) => {
         if (wishlist) {
-    ...
+    …
     ```
 
     That's just for the router.get, but regarding .post and .delete, you can also make them respond in the same way by adding the same line just before their .then lines as we did above.
+
+# Challenges to expand the wishlist functionality
+
+- Add wishlist listing to React, and add/remove buttons to each product
+- Add categories to API: products belong to many categories, categories have many products. There may be several ways to model this! (see the orange headings here for categories: https://www.amazon.com.au/gp/site-directory/ref=nav_shopall_btn)
+- Add categories nav to React
+- Add dotenv package to api, and use for mongo URI, JWT secret
+
+## Add wishlist listing to React
+

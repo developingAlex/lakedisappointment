@@ -3,15 +3,18 @@ import React, { Component } from 'react';
 import './App.css';
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
+import Wishlist from './components/Wishlist'
 import { signIn, signUp, signOutNow } from './api/auth'
-import { listProducts } from './api/products';
+import { listProducts, listWishlistProducts } from './api/products';
 import {setToken} from './api/init'
 import {getDecodedToken} from './api/token'
 
 class App extends Component {
 
   state = {
-    decodedToken: getDecodedToken()
+    decodedToken: getDecodedToken(),
+    products: null,
+    wishListProducts: null
   }
   onSignIn = ({email, password})=>{
     console.log('App received', {email, password})
@@ -37,7 +40,7 @@ class App extends Component {
   }
 
   render() {
-    const { decodedToken } = this.state
+    const { decodedToken, products, wishListProducts } = this.state
     return (
       <div className="App">
         <header className="App-header">
@@ -49,12 +52,15 @@ class App extends Component {
         {
           !!decodedToken ? (
             <div>
-            <p>Email: { decodedToken.email } </p>
-            <p> Signed in at { new Date(decodedToken.iat*1000).toISOString() }</p>
-            <p> session expires at { new Date(decodedToken.exp*1000).toISOString() }</p>
-            <button onClick = { this.onSignOut }>
-            Sign Out
-            </button>
+              <p>Email: { decodedToken.email } </p>
+              <p> Signed in at { new Date(decodedToken.iat*1000).toISOString() }</p>
+              <p> session expires at { new Date(decodedToken.exp*1000).toISOString() }</p>
+              <button onClick = { this.onSignOut }>
+              Sign Out
+              </button>
+              <Wishlist
+                {...wishListProducts}
+              />
             </div>
           ) : (
             <div>
@@ -72,16 +78,22 @@ class App extends Component {
     );
   }
 
-
   componentDidMount(){
     //when this app appears on screen
     listProducts()
     .then((products) => {
-      console.log(products)
-
+      this.setState({products})
     })
     .catch((error) => {
-      console.error('error loading products', error)
+      console.error('error loading products', error.message)
+    })
+
+    listWishlistProducts()
+    .then((wishListProducts) => {
+      this.setState({wishListProducts})
+    })
+    .catch((error) => {
+      console.error('error loading wishlist products', error.message)
     })
   }
 }
