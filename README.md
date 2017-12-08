@@ -1447,3 +1447,57 @@ and then finally sets the states activeProductId back to null.
 
     ###
     ```
+
+1. the opposite of $addToSet is $pull, needed for removing products from the wishlist.
+
+    then to implement that functionality we basically copy and paste what we wrote for adding and then change the operator from $addToSet to $pull and change the http verb to delete:
+
+    ```javascript
+    router.delete('/wishlist/products/:productID', requireJWT, (req, res) => {
+      const { productID } = req.params
+      Wishlist.findOneAndUpdate(
+        { 
+          user: req.user 
+        }, 
+        {
+          //make the changes
+          // https://docs.mongodb.com/manual/reference/operator/update/pull/
+          $pull: {products: productID}
+        },
+        { 
+          upsert: true, new:true, runValidators: true //upsert = update and insert
+        })
+        .then((wishlist) => {
+          res.json({products: wishlist.products })
+        })
+        .catch ((error) => {
+          res.status(400).json({error: error.message})
+        })
+    })
+    ```
+
+1. then test in your check.http file :
+
+    ```
+    ###
+
+    DELETE http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d16b
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+    ```
+
+1. Now as it is, the response for the wishlist is just an array of product ids. but it would be nicer if it responded with the actual products.
+
+    We can make that happen easily with the populate method, inserted into our get wishlist router code:
+
+    ```javascript
+    router.get('/wishlist', requireJWT, (req, res) => {
+      
+      // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+      Wishlist.findOne({user: req.user })
+      .populate('products')
+      .then((wishlist) => {
+        if (wishlist) {
+    ...
+    ```
+
+    That's just for the router.get, but regarding .post and .delete, you can also make them respond in the same way by adding the same line just before their .then lines as we did above.
