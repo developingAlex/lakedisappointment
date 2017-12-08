@@ -9,12 +9,16 @@ POST http://localhost:7000/auth/register
 Content-Type: application/json
 
 {
-  "email": "user0@mail.com",
+  "email": "user1@mail.com",
   "firstName": "Alphie",
   "lastName": "Bravo",
   "password": "password123"
 }
 
+###
+
+GET http://localhost:7000/wishlist
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
 ###
 
 POST http://localhost:7000/auth

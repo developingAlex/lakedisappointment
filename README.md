@@ -1148,3 +1148,224 @@ import api from './init'
 ### So why did that happen?
 
 The most I could find about this is that it is something that is added by the **passport-local-mongoose** package that we use with our user model. However reading the documentation suggests that a flag uniqueUsername or something which governs that behaviour should be set by default to true which should have prevented such a thing from happening, and we didn't set it to anything ourselves manually, so how that "username_1" index came to be set I still don't know. After scrutinising this aspect of my app I realised I had just copy and pasted the mongoose connecting code from my previous app and that's why the database name is 'storms', and that this may have had something to do with the user's table getting that extra index. However Isabelle was also affected by this issue but she actually made a new database for this exercise, also she's using a mac whereas I'm on Linux and we couldn't think of anything our environments had in common so how we came to be affected by this is not known.
+
+# Instructors solutions to the challenges:
+## listing the products
+if we're signed in, list the products
+
+otherwise set the state's products list to null.
+
+that was put in a 'load()' method
+
+how to detect when they click sign out? apparently this.setstate is asynchronous
+the second argument to setState is a callback function once setState is finished.
+
+but instead
+he uses componentDidUpdate and then in there compares the decodedToken to the prevState's decodedToken and if it's changed then runs the load method.
+
+(in the screen recording he's running through how the internals of the setState method works)
+
+## form to create new products
+
+similar pattern to the signup form.
+
+now how to update the state to include the newly created product
+
+uses this.setState to concat the new product onto the existin product array.
+
+when creation happens, response from backend should spit back the newly saved document from the db.  including the db _id. in this way the frontend then has this information so that if it wants to make a subsequent request in relation to that item, it has the _id to use to identify which one it's talking about to the server.
+
+## updating a product
+
+a good amazing cheatsheet mongoose vs active record (from his coder academy patterns github)
+
+he's using the findOneAndUpdate(conditions, changes, {new: true, runValidators: true})
+
+the {new: true, runValidators: true} is to override the mongoose defaults 
+new: true => Please return to us the NEW product
+runValidators => self explanatory
+
+he adds that to the backend code in a new route: put /products/:id
+
+(you can refer to his git commits for step by step code changes)
+
+He wanted to have a single product form that could be used for both creating and editing.
+
+he handles the difference between the two cases with props. he changes the title of the form using a prop so the caller can decide. and he runs a generic 'onSubmit' that is also passed by the caller so the caller can handle what to do with the data depending on use case.
+
+### doing the edit form for updating products
+
+in the components/Product.js
+
+he adds an onEdit command in an onClick on the div of an individual proudct listing.
+the product list he has as its own component
+
+the individual product component's responsibility: I'll let you know when I'm clicked
+the product list component's responsibility: I'll let you know which one was clicked.
+
+**Note: if you need to wrap multiple elements in a div because it's in a javascript return statement, but you don't actually want a div, use the fragment element**
+
+clicking on a product then has the effect of setting a value in the state called activeProductId and this gets set to the id of the product that was clicked.
+
+in order to get the product edit form to render when a product was clicked, the productList component has a prop called renderEditForm(product) which is a function passed to it by the parent calling function (as an arrow function)
+
+to then used .map to find the product in the list that was updated, and if it was it gets replaced with the updated version.
+
+and then finally sets the states activeProductId back to null.
+
+# following along
+
+create a new model called wishlist initially a copy paste of the models/product.js code
+
+```javascript
+const mongoose = require('./init')
+const Schema = mongoose.Schema
+
+// similar to :
+// t.references :owner, foreign_key: {to_table: :users}
+
+const Wishlist = mongoose.model('Wishlist', {
+  user: { type: Schema.ObjectId, ref: 'User' },
+  name: String
+})
+
+module.exports = Wishlist
+```
+
+```
+const mongoose = require('./init')
+const Schema = mongoose.Schema
+
+// similar to :
+// t.references :owner, foreign_key: {to_table: :users}
+//what comes after the .model in the below line, is the schema.
+
+const Wishlist = mongoose.model('Wishlist', {
+  user: { type: Schema.ObjectId, ref: 'User', unique: true },
+  //unique true so that each user will only have ONE wishlist.
+  //one wishlist will have multiple products, we do that by wrapping it in square brackets
+  product: [{type: Schema.ObjectId, ref: 'Product'}],
+  name: String
+})
+
+module.exports = Wishlist
+```
+
+next up is routes for the wishlist:
+
+copy the products routes file and then edit it to change it to be about wishlists with a couple tweaks:
+
+```
+const express = require('express')
+const Wishlist = require('../models/Wishlist')
+// const authMiddleWare = require('../middleware/auth')
+const { requireJWT } = require('../middleware/auth')
+const router = new express.Router()
+
+router.get('/wishlist', requireJWT, (req, res) => {
+  
+  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+  Wishlist.findOne({user: req.user })
+  .then((wishlist) => {
+    res.status(200).json({wishlist})
+  })
+  .catch((error)=> {
+    res.status(400).json({error: error.message}) //if you return the whole error you may be giving away too much information
+  })
+})
+
+module.exports = router
+```
+we changed it to error code 500 for internal server error as it wouldn't be the users fault in this case.
+```
+const express = require('express')
+const Wishlist = require('../models/Wishlist')
+// const authMiddleWare = require('../middleware/auth')
+const { requireJWT } = require('../middleware/auth')
+const router = new express.Router()
+
+router.get('/wishlist', requireJWT, (req, res) => {
+  
+  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+  Wishlist.findOne({user: req.user })
+  .then((wishlist) => {
+    res.status(200).json({wishlist})
+  })
+  .catch((error)=> {
+    res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
+  })
+})
+
+module.exports = router
+```
+remember to add require('./routes/wishlists'), to your server.use array in server.js
+
+now make a test GET method in the check.http file, but first you will have to make the post request to authenticate so you can grab a copy of the token then you can make a post request like this:
+```
+###
+
+GET http://localhost:7000/wishlist
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+###
+```
+
+make the wishlist return the products in itself:
+
+```
+const express = require('express')
+const Wishlist = require('../models/Wishlist')
+// const authMiddleWare = require('../middleware/auth')
+const { requireJWT } = require('../middleware/auth')
+const router = new express.Router()
+
+router.get('/wishlist', requireJWT, (req, res) => {
+  
+  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+  Wishlist.findOne({user: req.user })
+  .then((wishlist) => {
+    if (wishlist) {
+      res.status(200).json({products: wishlist.products})
+    }
+  })
+  .catch((error)=> {
+    res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
+  })
+})
+
+ 
+module.exports = router
+```
+
+and return an empty array otherwise:
+```
+const express = require('express')
+const Wishlist = require('../models/Wishlist')
+// const authMiddleWare = require('../middleware/auth')
+const { requireJWT } = require('../middleware/auth')
+const router = new express.Router()
+
+router.get('/wishlist', requireJWT, (req, res) => {
+  
+  // from https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord
+  Wishlist.findOne({user: req.user })
+  .then((wishlist) => {
+    if (wishlist) {
+      res.status(200).json({products: wishlist.products})
+    }
+    else {
+      res.status(200).json({products: []})
+    }
+  })
+  .catch((error)=> {
+    res.status(500).json({error: error.message}) //if you return the whole error you may be giving away too much information
+  })
+})
+
+ 
+module.exports = router
+```
+
+We do it this way, in the backend, so that the client side doesn't have to have as much logic about how to handle a possible null response
+
+
+
