@@ -1244,7 +1244,7 @@ const Wishlist = mongoose.model('Wishlist', {
   user: { type: Schema.ObjectId, ref: 'User', unique: true },
   //unique true so that each user will only have ONE wishlist.
   //one wishlist will have multiple products, we do that by wrapping it in square brackets
-  product: [{type: Schema.ObjectId, ref: 'Product'}],
+  products: [{type: Schema.ObjectId, ref: 'Product'}],
   name: String
 })
 
@@ -1367,5 +1367,86 @@ module.exports = router
 
 We do it this way, in the backend, so that the client side doesn't have to have as much logic about how to handle a possible null response
 
+moving onto handling the post from a user to add a product to the wishlist:
 
+```
 
+router.post('/wishlist/products/:productID', (req, res) => {
+  const { productID } = req.params
+  
+})
+```
+ 
+going to use the findOneAndUpdate to make the update.
+
+```
+router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
+  const { productID } = req.params
+  Wishlist.findOneAndUpdate({ user: req.user }, {
+    // change to come soon 
+  },
+  { 
+    upsert: true, runValidators: true //upsert = update and insert
+  })
+})
+```
+Add the code to make the change for us using $addToSet
+```
+
+router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
+  const { productID } = req.params
+  Wishlist.findOneAndUpdate(
+    { 
+      user: req.user 
+    }, 
+    {
+      //make the changes
+      // https://docs.mongodb.com/manual/reference/operator/update/addToSet/
+      $addToSet: {products: productID}
+    },
+    { 
+      upsert: true, runValidators: true //upsert = update and insert
+    })
+})
+```
+```
+
+router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
+  const { productID } = req.params
+  Wishlist.findOneAndUpdate(
+    { 
+      user: req.user 
+    }, 
+    {
+      //make the changes
+      // https://docs.mongodb.com/manual/reference/operator/update/addToSet/
+      $addToSet: {products: productID}
+    },
+    { 
+      upsert: true, new:true, runValidators: true //upsert = update and insert
+    })
+    .then((wishlist) => {
+      res.json({products: wishlist.products })
+    })
+    .catch ((error) => {
+      res.status(400).json({error: error.message})
+    })
+})
+```
+
+now to add a test to your check.http with a valid and invalid product id.
+
+and you can see that the check will fail if we pass as an id 'robot' but it will pass if we pass what looks like a valid id: 
+below the one ending in 222 doesn't correspond to anything in the database but that request is still honored.
+```
+
+POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d222
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+
+###
+
+POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d16b
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
+
+###
+```

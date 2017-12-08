@@ -9,7 +9,7 @@ const Wishlist = mongoose.model('Wishlist', {
   user: { type: Schema.ObjectId, ref: 'User', unique: true },
   //unique true so that each user will only have ONE wishlist.
   //one wishlist will have multiple products, we do that by wrapping it in square brackets
-  product: [{type: Schema.ObjectId, ref: 'Product'}],
+  products: [{type: Schema.ObjectId, ref: 'Product'}],
   name: String
 })
 
