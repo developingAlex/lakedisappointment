@@ -28,3 +28,7 @@ button{
   border: none;
   background-color: orange;
 }
+
+button:hover{
+  box-shadow: 0px 0px 15px 0px steelblue;
+}

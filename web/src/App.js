@@ -48,7 +48,7 @@ class App extends Component {
           <h1 className="App-title">Welcome to Lake Disappointment</h1>
         </header>
         <p className="App-intro">
-          Now delivering! shipping millions of new products!
+          Where the shipping is free, the prices are cheap and the quality cheaper! now shipping millions of mundane products!
         </p>
         {
           !!decodedToken ? (
