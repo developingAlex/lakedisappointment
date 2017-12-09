@@ -4,11 +4,6 @@ import Product from './Product'
 function Wishlist({
   products
 }) {
-  if (products) {
-
-    console.log('what is products when it crashes?')
-    console.log(products)
-  }
   return(
     <div className='mb-3'>
       {

@@ -5,8 +5,9 @@ import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
 import Wishlist from './components/Wishlist'
 import ProductList from './components/ProductList'
+import ProductForm from './components/ProductForm'
 import { signIn, signUp, signOutNow } from './api/auth'
-import { listProducts, listWishlistProducts } from './api/products';
+import { listProducts, listWishlistProducts, createProduct } from './api/products';
 // import {setToken} from './api/init'
 import {getDecodedToken} from './api/token'
 
@@ -17,16 +18,27 @@ class App extends Component {
     products: null,
     wishListProducts: null
   }
+  
+  onCreateProduct = ( productData) => {
+    createProduct(productData)
+      .then((newProduct)=>{
+        console.log('successfully created new product', newProduct)
+      })
+      .catch((error) => {
+        console.error('There was an error trying to create the new product: ', error.message)
+      })
+  }
+
   onSignIn = ({email, password})=>{
     console.log('App received', {email, password})
-
+    
     signIn({email, password})
     .then((decodedToken) => {
       console.log('Signed in:',decodedToken)
       this.setState({decodedToken})
     })
   }
-
+    
   onSignUp = ({firstname, lastname, email, password}) => {
     signUp({firstname, lastname, email, password})
     .then((decodedToken) => {
@@ -61,6 +73,10 @@ class App extends Component {
               </button>
               <ProductList
                 {...products}
+              />
+              <ProductForm
+                title='Enter a new product:'
+                onSave={this.onCreateProduct }
               />
               <Wishlist
                 {...wishListProducts}
