@@ -1511,3 +1511,321 @@ and then finally sets the states activeProductId back to null.
 
 ## Add wishlist listing to React
 
+
+# Follow along while instructor solves the challenge of adding categories to products
+
+regarding the functionality to add or remove from the wishlist:
+uses key in fragment of return statement of wishlist
+
+onAddToWishlist and onRemoveFromWishlist
+
+they are functions passed as props
+using the conditional trick to only render buttons if those functions are passed through.
+
+in this way he ensures that when viewing your current wishlist, only the remove from wishlist button shows, not also the add to wishlist button.
+
+when those functions are passed through from the app.js file, in there they are declared as functions that basically make api calls to make the changes and then update the state once they get a response back.
+
+we're going to be using *react-router* which has become the defacto standard for routing in react, (they have a dedicated docs site for learning about it - when you go there click on the web button for the web docs) 
+
+looking at the section 'static routing'
+
+an example, looking at their own docs, they have a side bar that persists when you navigate their docs. you can see that that is based on the url as everything in the docs for web is preceeded by .../react-router/web/...
+
+install it in your web (frontend) directory `yarn add react-router-dom`
+
+'history' the javascript library handles the cross browser issues with handling different routes with callbacks that run when the path changes. 
+
+import into your app.js: 
+`import { BrowserRouter as Router, Route } from 'react-router-dom'`
+
+that 'as' above is like an alias
+
+in the app.js in the render's return statement, which returns single div, we're going to wrap it in `<Router> </Router>` tags so that it's now a `<Router>` element that is being returned not a `<div> ` 
+
+the router adds 'context' to your app
+
+We only want the h2 and h1 to only sho on the home page.
+
+within the <div> mentioned above add:
+```javascript
+<Route path = '/' exact render={()=>(
+
+)}
+/>
+```
+
+the exact ensures it doesn't see that path as a prefix
+
+and then within that block is where you put the <h1> and <h2> elements, now they will only render when the path is '/'
+
+scroll all the way to the top of your file, where you are importing React, {Component} and add in fragment: `import React, {Component, Fragment} from 'react'`
+
+now you can wrap the h1 and h2 in a `<Fragment>` element to fix the syntax errors of trying to return multiple elements.
+
+Now you'll notice if you change the url to http://localhost:3000/somethingelse it will now no longer render the h1 and h2.
+
+now we'll repeat that for the wishlist section by wrapping it in a <Route ...> element to ensure only when the user visits '/wishlist' will it render.
+
+because we're using an arrow function. we're still able to refer to the variables that were declared outside of that function. eg, in the case of the wishlist, have access still to the signedIn and wishlist variables and also the this.onRemoveProductFromWishlist and similar.
+
+at the moment our render has a lot of html code in it. now we'll look at bringing some of that out into its own logical 'page' of code (a component).
+
+wrap the sign up and sign in html in another route: 
+```javascript
+<Route path='/signin' exact render = {()=> (
+  <Fragment> 
+    <h2> Sign In </h2>
+    <SignInForm
+      onSignIn = this.onSignIn }
+    />
+  </Fragment>
+  )}
+  />
+```
+the signup is done the same way
+
+, 
+
+showing an empty div now in the ternary for if they're signed in so change that to:
+```javascript
+<Route path='/signin' exact render = {()=> (
+  <Fragment> 
+    // the code for displaying a users signed in details
+  </Fragment>
+  )}
+  />
+```
+
+moved the rendering code for the list of products to a path /products as above
+
+---
+
+install the prettifier vs code plugin `Prettier formatter for Visual Studio Code` by Esben Petersen
+
+**You might want to commit your changes before you run that.**
+
+**if you install a plugin that requires you reboot your vscode any running terminals will be blown away so you may have some server restarting to do**
+----
+
+run it from vs code command palette as 'format document'
+
+Prettier.io has a section on pre-commit hook, which you can follow if you want it to automatically format your style before git committing.
+
+----
+
+making a route for creation of new products as '/admin/products'
+
+we now have 
+
+/signin
+/signup
+/products
+/wishlist
+/admin/products
+
+next up is adding a navigation bar with links to all these sections.
+
+code up to this point available on the instructors `routes` branch
+
+making a new component called PrimaryNav
+```javascript
+import React from 'react'
+import { Link } from 'react-router-dom'
+
+function PrimaryNav({
+
+}) {
+  return(
+    <nav className='primary'>
+      <ul>
+        <li><Link to='/'>Home</Link></li>
+        <li><Link to='/products'>Products</Link></li>
+        // Link to= instead of a href= for the react-router-dom syntax
+      </ul>
+    </nav>
+  )
+}
+
+export default PrimaryNav
+```
+
+
+'Inclusive design patterns' book is a book pat recommends
+
+talks about stuff like using a <ul><li> for nav items because if css doesn't work on older browsers it still looks kind of presentable and accessible to accessibility technologies.
+
+import the primary nav we just made on the main app.js file:
+
+`import PrimaryNav from './components/PrimaryNav'`
+
+then make it appear at the top of our website:
+just under `<div className="App">` place:
+`<PrimaryNav />`
+
+repeat this process for the other links you want to add.
+
+adding custom css:
+
+```css
+nav.primary ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0.5rem;
+}
+
+nav.primary a {
+  display: block;
+  padding: 0.5rem 0.5rem;
+}
+```
+
+Next step is to conditionally display nav bar links depending on whether the user is signed in or not.
+
+pass a prop to the PrimaryNav component called 'signedIn' which can be used then in the return statement with ternary and fragments (you'll have to import fragment along with React)
+import React, { Fragment } from 'react'
+
+React is a named export Fragment is a ???? CHECK THE SCREEN RECORDING
+
+[break]
+
+following along with devise's concept of before_action authenticate user, we want to redirect the user if they attempt to visit /wishlist for example before they're signed in.
+
+go to the part of your app.js <Route path ='/wishlist'...>
+
+checking docs for react-router -> there's a redirect component -> <Redirect to='/signin'>
+
+`import {Redirect} from 'react-router-dom'`
+
+and add it into the wishlist rendering code using a ternary:
+`signedIn ? (<Fragment>...</Fragment>) : (<Redirect to='/signin' />)`
+
+doing this for every page that needs to be signed in would get repetitive so going to extract the logic out to a reusable function
+
+at the top of the render method (in app.js) :
+```javascript
+const signedIn = !!decodedToken //true if decodedToken is not null
+const requireAuth = (render) => (props) => (
+  signedIn ? (
+    render()
+  ) : (
+    <Redirect to='signin' />
+  )
+)
+```
+The double arrow above means that what it returns is *another* function, but the *internals* of that function have been amended to have the custom render() function added into it. (a lot spoken in the screen recording about this)
+
+
+you can then make use of that by wrapping the function where you want to use it in the requireAuth like so:
+
+```javascript
+<Route path='/wishlist' exact render = {requireAuth(()=> (
+  <Fragment> 
+    // the code for displaying a users signed in details
+  </Fragment>
+  ))}
+  />
+```
+
+The app currently does not present login errors to the user upon a wrong password or similar, we need to capture any errors in the state, and present such errors if they are present.
+
+if we make a function like this:
+```javascript
+const saveError= (error) => {
+  this.setState({error})
+}
+```
+we can change something like this
+
+```javscript
+.catch((error => {
+  this.setState({error})
+}))
+```
+
+to this
+
+```javascript
+.catch(saveError)
+```
+
+code to then conditionally display error:
+
+{
+  error &&
+  <p>{ error.message } </p>
+}
+
+This won't yet work because our current implementation doesn't pass the error along in our backend code.
+
+instructor tried the following but said he would have to look into it later
+```javascript
+server.use((error, req, res, next) => {
+  res.json({
+    error:{
+      message: error.message
+    }
+  })
+})
+```
+
+update: the onSignIn function in the app.js in the frontend didn't have a .catch statement.
+
+after he ran that the error returned for an incorrect password was just the error code 400. 
+
+make an error component (because we're going to need to run some logic to decypher the true error for the user.)
+```javascript
+import React from 'react'
+
+function Error({
+  error
+}){
+  return (
+    <p> {error.message}</p>
+  )
+}
+
+export default Error
+```
+
+below is using it in the app.js:
+```javascript
+{
+  error && 
+  <Error error={error} />
+}
+```
+
+```javascript
+function improveMessage(message) {
+  if (message === 'Request failed with status code 400'){
+    return 'Please check the entered values'
+  }
+  return message
+}
+```
+you can make a method in the error component to change the error message each time to more human readable.
+```javascript
+function improveMessage(message) {
+  if (/status code 400/.test(message)){
+    return 'Please check the entered values'
+  }
+  
+  else if (/status code 401/.test(message)){
+    return 'You must be signed in'
+  }
+  else if (/status code 500/.test(message)){
+    return 'The server is on fire'
+  }
+  
+  return message
+}
+```
+
+he adds a .catch to the onSignIn logic to form a new error with a custom message, and then subsequently throws that error so in this way the context of what the user was doing at the time helps inform what appropriate error message should be displayed.
+
+then adds the logic for, if we're on the sign in page and we are signed in. then redirect to the products page.
+
+
+
