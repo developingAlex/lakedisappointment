@@ -110,6 +110,9 @@ class App extends Component {
               />
             </Fragment>
           ) } />
+          <Route path='/signout' exact render = {()=>(
+            <Fragment>{ this.onSignOut()}</Fragment>
+          ) } />
           {
             signedIn &&
             <div className="pad-2">

@@ -32,3 +32,15 @@ button{
 button:hover{
   box-shadow: 0px 0px 15px 0px steelblue;
 }
+
+nav.primary ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1rem;
+}
+
+nav.primary a {
+  display: block;
+  padding: 1rem 1rem;
+}
