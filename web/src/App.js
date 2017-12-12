@@ -1,11 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 // import logo from './logo.svg';
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 import './App.css';
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
 import Wishlist from './components/Wishlist'
 import ProductList from './components/ProductList'
 import ProductForm from './components/ProductForm'
+import PrimaryNav from './components/PrimaryNav'
 import { signIn, signUp, signOutNow } from './api/auth'
 import { listProducts, listWishlistProducts, createProduct } from './api/products';
 // import {setToken} from './api/init'
@@ -14,6 +16,7 @@ import {getDecodedToken} from './api/token'
 class App extends Component {
 
   state = {
+  
     decodedToken: getDecodedToken(),
     products: null,
     wishListProducts: null
@@ -54,16 +57,61 @@ class App extends Component {
 
   render() {
     const { decodedToken, products, wishListProducts } = this.state
+    const signedIn = !!decodedToken
     return (
-      <div className="App">
-        <header className="App-header">
-          <h1 className="App-title">Welcome to Lake Disappointment</h1>
-        </header>
-        <p className="App-intro">
-          Where the shipping is free, the prices are cheap and the quality cheaper! now shipping millions of mundane products!
-        </p>
-        {
-          !!decodedToken ? (
+      <Router>
+        <div className="App">
+        <PrimaryNav
+          signedIn = {signedIn}
+          />
+          <Route path='/' exact render = {() => (
+            <Fragment>
+              <header className="App-header">
+                <h1 className="App-title">Welcome to Lake Disappointment</h1>
+              </header>
+              <p className="App-intro">
+                Where the shipping is free, the prices are cheap and the quality cheaper! now shipping millions of mundane products!
+              </p>
+            </Fragment>
+          ) } />
+          <Route path='/signin' exact render = {()=>(
+            <Fragment>
+              <SignInForm
+                onSignIn = { this.onSignIn }
+              />
+            </Fragment>
+          ) } />
+          <Route path='/signup' exact render = {()=>(
+            <Fragment>
+              <SignUpForm
+                onSignUp = { this.onSignUp }
+              />
+            </Fragment>
+          ) } />
+          <Route path='/products' exact render = {()=>(
+            <Fragment>
+              <ProductList
+                {...products}
+              />
+            </Fragment>
+          ) } />
+          <Route path='/admin/products' exact render = {()=>(
+            <Fragment>
+              <ProductForm
+                title='Enter a new product:'
+                onSave={this.onCreateProduct }
+              />
+            </Fragment>
+          ) } />
+          <Route path='/wishlist' exact render = {()=>(
+            <Fragment>
+              <Wishlist
+                {...wishListProducts}
+              />
+            </Fragment>
+          ) } />
+          {
+            signedIn &&
             <div className="pad-2">
               <p>Email: { decodedToken.email } </p>
               <p> Signed in at { new Date(decodedToken.iat*1000).toISOString() }</p>
@@ -71,30 +119,10 @@ class App extends Component {
               <button onClick = { this.onSignOut }>
               Sign Out
               </button>
-              <ProductList
-                {...products}
-              />
-              <ProductForm
-                title='Enter a new product:'
-                onSave={this.onCreateProduct }
-              />
-              <Wishlist
-                {...wishListProducts}
-              />
             </div>
-          ) : (
-            <div>
-              <SignInForm
-                onSignIn = { this.onSignIn }
-              />
-              <SignUpForm
-                onSignUp = { this.onSignUp }
-              />
-            </div>
-          )
-
-        }
-      </div>
+          }
+        </div>
+      </Router>
     );
   }
 

@@ -1545,7 +1545,7 @@ in the app.js in the render's return statement, which returns single div, we're 
 
 the router adds 'context' to your app
 
-We only want the h2 and h1 to only sho on the home page.
+We only want the h2 and h1 to only show on the home page.
 
 within the <div> mentioned above add:
 ```javascript
@@ -1569,7 +1569,7 @@ now we'll repeat that for the wishlist section by wrapping it in a <Route ...> e
 
 because we're using an arrow function. we're still able to refer to the variables that were declared outside of that function. eg, in the case of the wishlist, have access still to the signedIn and wishlist variables and also the this.onRemoveProductFromWishlist and similar.
 
-at the moment our render has a lot of html code in it. now we'll look at bringing some of that out into its own logical 'page' of code (a component).
+at the moment our render method is rendering everything. Now we'll look at splitting that up into their own logical pages ('/' for home page, '/signin' for the the signin page etc.)
 
 wrap the sign up and sign in html in another route: 
 ```javascript
