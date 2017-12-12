@@ -1711,7 +1711,7 @@ const requireAuth = (render) => (props) => (
     render()
   ) : (
     <Redirect to='signin' />
-  )
+   )   
 )
 ```
 The double arrow above means that what it returns is *another* function, but the *internals* of that function have been amended to have the custom render() function added into it. (a lot spoken in the screen recording about this)

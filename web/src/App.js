@@ -58,6 +58,14 @@ class App extends Component {
   render() {
     const { decodedToken, products, wishListProducts } = this.state
     const signedIn = !!decodedToken
+    const requireAuth = (render) => (props) =>(
+      signedIn ? (
+        render()
+      ) : (
+        <Redirect to='/signin' />
+      )
+    )
+
     return (
       <Router>
         <div className="App">
@@ -95,15 +103,15 @@ class App extends Component {
               />
             </Fragment>
           ) } />
-          <Route path='/admin/products' exact render = {()=>(
+          <Route path='/admin/products' exact render = {requireAuth(()=>(
             <Fragment>
               <ProductForm
                 title='Enter a new product:'
                 onSave={this.onCreateProduct }
               />
             </Fragment>
-          ) } />
-          <Route path='/wishlist' exact render = {()=>(
+          ) ) } />
+          <Route path='/wishlist' exact render = {requireAuth(()=>(
             signedIn ? (
             <Fragment>
               <Wishlist
@@ -112,7 +120,7 @@ class App extends Component {
             </Fragment> ) : (
               <Redirect to='/signin' />
             )
-          ) } />
+          ) ) } />
           <Route path='/signout' exact render = {()=>(
             <Fragment>
               { this.onSignOut()}
