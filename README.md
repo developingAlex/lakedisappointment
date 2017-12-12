@@ -1512,7 +1512,7 @@ and then finally sets the states activeProductId back to null.
 ## Add wishlist listing to React
 
 
-# Follow along while instructor solves the challenge of adding categories to products
+# Follow along in class demonstrating routing with different URLS in ReactJS
 
 1. Regarding the functionality to add or remove from the wishlist:
 uses key in fragment of return statement of wishlist
