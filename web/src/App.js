@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 // import logo from './logo.svg';
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
 import './App.css';
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
@@ -104,14 +104,20 @@ class App extends Component {
             </Fragment>
           ) } />
           <Route path='/wishlist' exact render = {()=>(
+            signedIn ? (
             <Fragment>
               <Wishlist
                 {...wishListProducts}
               />
-            </Fragment>
+            </Fragment> ) : (
+              <Redirect to='/signin' />
+            )
           ) } />
           <Route path='/signout' exact render = {()=>(
-            <Fragment>{ this.onSignOut()}</Fragment>
+            <Fragment>
+              { this.onSignOut()}
+              <Redirect to='/' />
+            </Fragment>
           ) } />
           {
             signedIn &&
