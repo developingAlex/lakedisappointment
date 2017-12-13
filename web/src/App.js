@@ -39,6 +39,7 @@ class App extends Component {
     .then((decodedToken) => {
       console.log('Signed in:',decodedToken)
       this.setState({decodedToken})
+      this.load()
     })
   }
     
@@ -47,12 +48,14 @@ class App extends Component {
     .then((decodedToken) => {
       console.log('Signed up:', decodedToken)
       this.setState({decodedToken})
+      this.load()
     })
   }
 
   onSignOut = () => {
     signOutNow()
-    this.setState({ decodedToken: null})
+    this.setState({ decodedToken: null, products: null})
+    this.load()
   }
 
   render() {
@@ -145,6 +148,10 @@ class App extends Component {
 
   componentDidMount(){
     //when this app appears on screen
+    this.load()
+  }
+  
+  load(){
     listProducts()
     .then((products) => {
       this.setState({products})
@@ -152,7 +159,7 @@ class App extends Component {
     .catch((error) => {
       console.error('error loading products', error.message)
     })
-
+  
     listWishlistProducts()
     .then((wishListProducts) => {
       this.setState({wishListProducts})
@@ -160,7 +167,10 @@ class App extends Component {
     .catch((error) => {
       console.error('error loading wishlist products', error.message)
     })
+
+
   }
+
 }
 
 export default App;
