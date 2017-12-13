@@ -1945,10 +1945,19 @@ so that the products list is viewable without needing to be signed in.
 
     Check out the loadSection function in his app.js
 
-## Technologies mentioned
+## Technologies mentioned and other random javascript tips
 
 * bundlephobia.com for anything you `yarn add` and it will tell you how big that library is. 
 * unpkg.com was shown as an example of minifying the javascript "minification"
 * github.com/developit microbundle
 * github.com/insin/nwb
 * [The javascript quirks table](https://dorey.github.io/JavaScript-Equality-Table/)
+* .some on an array is like ORing all the elements ||
+    
+    .every on an array is like ANDing all the elements &&
+* babel turns your modern javascript syntax into older (but more widely supported) syntax
+
+    babeljs.io
+* on platforms that can host mongo apps, a couple mentioned in class:
+    * mongoDB atlas - platform you could publish (requires phone number)
+    * mlab.com - decent free plan
