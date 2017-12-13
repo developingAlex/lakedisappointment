@@ -1512,7 +1512,7 @@ and then finally sets the states activeProductId back to null.
 ## Add wishlist listing to React
 
 
-# Follow along in class demonstrating routing with different URLS in ReactJS
+# 20171212 - Follow along in class demonstrating routing with different URLS in ReactJS
 
 1. Regarding the functionality to add or remove from the wishlist:
 uses key in fragment of return statement of wishlist
@@ -1861,4 +1861,76 @@ using the conditional trick to only render buttons if those functions are passed
     then adds the logic to handle if we're on the sign in page and we are signed in then to redirect to the products page.
 
 
+
+# 20171213 - continuing on from above 
+
+1. There is an issue with the token validation logic in web/src/api/token.js
+
+    Realised when the instructor pushed the app online, and subsequently moved the jwtsecret for the token into environment variables before pushing up.
+
+    The issue was that an existing signin then became invalidated.. His frontend thought he was still signed in because it still had a valid token, but the backend was rejecting it because the secret had now changed, and the frontend didn't have the logic to deal with that scenario, so he fixed it at the time by just deleting the token from his cookies.
+
+    The current logic is basically "if we have a decoded token, use it to attempt to load everything and assume its correct" 
+
+1. Also if we enter something weird into the path url, it DOESN'T respond with 404.
+
+1. Currently, the product list doesn't prevent products that are already in the user's wishlist, from getting an 'add to wishlist' button added to them as well.
+
+    In his product component, he's adding a new `const inWishlist = true` to above the return statement to use that value to conditionally show the addToWishlist or removeFromWishlist buttons.
+
+    For readability he's setting two other variables: `const showAddToWishlist = !inWishlist` and `const showRemoveFromWishlist = inWishlist`
+
+1. Another issue is that the current implementation for determining which products will have a "Remove from wishlist" button instead of "Add to wishlist" is passed the actual wishlist which it then checks to see which prouducts are inside that. Because of future scenarios, products might not be the only category, and so we want to change the ProductList code to not pass the wishlist itself, but rather only the productsInWishlist, as that's the only information the ProductList component cares about.
+
+1. If our api server is down the error message we get in the frontend is 'Network Error' which we can handle in our Error.js component
+    ```javascript
+    ...
+    else if (/Network Error/i.test(message)) {
+      return 'Cannot connect to the API server'
+    }
+    ...
+    ```
+
+1. React comes with a `<Switch>` element that can act as a case switch we can use to clean up our codes logic a bit.
+    ```javascript
+    <Switch>
+    <Route path='/' exact render={()=>(<Component/>)}/>
+    <Route path='/1' exact render={()=>(<Component1/>)}/>
+    <Route path='/2' exact render={()=>(<Component2/>)}/>
+    <Route path='/3' exact render={()=>(<Component3/>)}/>
+    <Route render={({location} )=> (
+      <Fragment>
+        <h2> page not found: { location.pathname } </h2>
+      </Fragment>
+      ) } />
+    </Switch>
+    ```
+
+1. The code componentDidUpdate() currently only checks if the decodedToken changed.
+
+1. We're using requireJWT middleware for /products so we'll get rid of that
+so that the products list is viewable without needing to be signed in.
+
+1. Changing the code to ensure that products are viewable even when not signed in hit a problem where by we (the instructors implementation, mine might not be up to that point yet) were checking for the presence of a wishlist before even rendering the products list (for the good of the add and remove to wishlist buttons) so now we have to program it to handle the scenario where wishlist is null. Setting wishlist to an empty array will be easy but then breaks some of our clean assumptions like whenever the list is null its because we can't talk or haven't gotten a response from the server. whereas an empty list implies a successful response from the server.
+
+    In the ProductList componenet code he uses a function to determine if a product appears in a wishlist and to return the appropriate key value pairs 
+
+1. Next issue, the homepage doesn't show the products, but its still loading the data regardless.
+
+    So the task is to change the code so that it only loads data from the api when particular paths are visited.
+
+    Uses a function that checks for particular attributes in the state, if it's there then it returns it, if its not then at that point it attempts to load the relevant data.
+
+    load on demand.
+    
+    You can see an example of this on the [instructors branch](https://github.com/Coder-Academy-Patterns/yarra/commit/9b31d80e62f4b31719e50278fd2f647b5ed9e6e2)
+
+    Check out the loadSection function in his app.js
+
+## Technologies mentioned
+
+* bundlephobia.com for anything you `yarn add` and it will tell you how big that library is. 
+* unpkg.com was shown as an example of minifying the javascript "minification"
+* github.com/developit microbundle
+* github.com/insin/nwb
 
