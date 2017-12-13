@@ -1,5 +1,23 @@
-### Previous exercise 20171204: https://github.com/developingAlex/storms-of-december
 # LakeDisappointment 20171206
+### Previous exercise 20171204: https://github.com/developingAlex/storms-of-december
+### Part of a series of exercises learning languages
+[See the contents page](https://github.com/developingAlex/contents) for links to other exercises and what they covered
+
+# Contents
+* [How to run - get up and running with a freshly cloned copy of this repo](#how-to-run)
+* [Initial App planning](#app-planning)
+* [Walkthrough of the steps performed to get authentication working in Node](#walkthrough-of-the-steps-performed-to-get-authentication-working-in-node)
+* [Moving onto working on the front end - React](#moving-onto-working-on-the-front-end---react)
+* [Challenges](#challenges)
+* [MongoError: E11000 duplicate key](#steps-ive-taken-and-struggles-to-implement-the-challenges)
+* Instructors solutions to the challenges
+    * [listing the products](#listing-the-products)
+    * [form to create new products](#form-to-create-new-products)
+    * [updating a product](#updating-a-product)
+    * [doing the edit form for updating products](#doing-the-edit-form-for-updating-products)
+    * [make a wishlist functionality](#following-along-to-make-a-wishlist-functionality-where-users-can-maintain-a-wishlist-of-products-demonstrates-how-to-manage-database-relationships)
+* [20171212 - Follow along in class demonstrating routing](#20171212---follow-along-in-class-demonstrating-routing-with-different-urls-in-reactjs)
+* [20171213 - continuing on from above](#20171213---continuing-on-from-above)
 
 # How to run
 If you clone this, to run it you have to:
@@ -1933,4 +1951,4 @@ so that the products list is viewable without needing to be signed in.
 * unpkg.com was shown as an example of minifying the javascript "minification"
 * github.com/developit microbundle
 * github.com/insin/nwb
-
+* [The javascript quirks table](https://dorey.github.io/JavaScript-Equality-Table/)
