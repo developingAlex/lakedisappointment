@@ -253,7 +253,12 @@ If you clone this, to run it you have to:
     const router = new express.Router()
 
     router.post('/auth/register', /*user middleware to handle the reg process */
-      /*  (req,res) => {}*/
+      /*  insert your (req,res) => {} block here, eg: */
+      (req, res) => {
+        res.json({
+          user: req.user
+        })
+      }
       authMiddleware.register
     )
 
