@@ -298,7 +298,7 @@ If you clone this, to run it you have to:
       signIn: passport.authenticate('local', {session: false} )
     }
     ```
-1. Add the following to your middleware/auth.js:
+1. Add the following to your routes/auth.js:
     ```javascript
     router.post('/auth',
       authMiddleware.signIn,
