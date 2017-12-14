@@ -25,6 +25,7 @@ router.get('/wishlist', requireJWT, (req, res) => {
 
 router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
   const { productID } = req.params
+  console.log('alex it got to the post route for /wishlist/products/:productID')
   Wishlist.findOneAndUpdate(
     { 
       user: req.user 

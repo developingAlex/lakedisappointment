@@ -9,7 +9,13 @@ import ProductList from './components/ProductList'
 import ProductForm from './components/ProductForm'
 import PrimaryNav from './components/PrimaryNav'
 import { signIn, signUp, signOutNow } from './api/auth'
-import { listProducts, listWishlistProducts, createProduct } from './api/products';
+import { 
+  listProducts, 
+  listWishlistProducts, 
+  createProduct, 
+  addProductToWishlist,
+  removeProductFromWishlist
+} from './api/products';
 // import {setToken} from './api/init'
 import {getDecodedToken} from './api/token'
 
@@ -58,9 +64,32 @@ class App extends Component {
     this.load()
   }
 
+  onAddProductToWishlist = (productId) => {
+    addProductToWishlist(productId)
+    .then ((res) => {
+      console.log(res)
+      this.load()
+    })
+    .catch ((error) => {
+      console.error(`There was an error attempting to add the the product with id ${productId} to your wishlist:`, error.message)
+    })
+  }
+
+  onRemoveProductFromWishlist = (productId) => {
+    removeProductFromWishlist(productId)
+    .then((res) =>{
+      console.log(res)
+      this.load()
+    })
+    .catch((error) =>{
+      console.error(`There was an error attempting to remove the the product with id ${productId} from your wishlist:`, error.message)
+    })
+  }
+
   render() {
     const { decodedToken, products, wishListProducts } = this.state
     const signedIn = !!decodedToken
+    
     const requireAuth = (render) => (props) =>(
       signedIn ? (
         render()
@@ -68,7 +97,7 @@ class App extends Component {
         <Redirect to='/signin' />
       )
     )
-
+    console.log("wishlistProducts from app.js:", wishListProducts)
     return (
       <Router>
         <div className="App">
@@ -102,7 +131,12 @@ class App extends Component {
           <Route path='/products' exact render = {()=>(
             <Fragment>
               <ProductList
-                {...products}
+                { ...products }
+                signedIn={ signedIn }
+                wishlistProducts={ wishListProducts }
+                onAddProductToWishlist={this.onAddProductToWishlist}
+                onRemoveProductFromWishlist={this.onRemoveProductFromWishlist}
+                 
               />
             </Fragment>
           ) } />
@@ -167,10 +201,7 @@ class App extends Component {
     .catch((error) => {
       console.error('error loading wishlist products', error.message)
     })
-
-
   }
-
 }
 
 export default App;
