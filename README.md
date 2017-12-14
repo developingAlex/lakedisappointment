@@ -18,6 +18,7 @@
     * [make a wishlist functionality](#following-along-to-make-a-wishlist-functionality-where-users-can-maintain-a-wishlist-of-products-demonstrates-how-to-manage-database-relationships)
 * [20171212 - Follow along in class demonstrating routing](#20171212---follow-along-in-class-demonstrating-routing-with-different-urls-in-reactjs)
 * [20171213 - continuing on from above](#20171213---continuing-on-from-above)
+* [Deployment steps](#deployment-steps)
 
 # How to run
 If you clone this, to run it you have to:
@@ -31,6 +32,13 @@ If you clone this, to run it you have to:
     * on MacOS:
         1. Check if its running with `brew services list`
         1. ensure the server is running by executing `brew services start mongod`
+1. If there are any lines in the source code that look like `process.env.MONGO_URI` for example, particularly the `process.env` part, then it means some environment variables have been deployed, and they won't have been pushed to github so you won't have a copy of them. You'll have to create a file in your backend /api folder called .env (and production.env if you're to be deploying online) and here is an example of what the contents would be for dev:
+    * `MONGO_URI = mongodb://localhost/yarra`
+
+        Where 'yarra' is the name your using for your mongo database
+
+        **Note**: in the below code, you'll see parts where I have storms instead (I should have changed that at the start as that was a prior project so just bear that in mind, if you're starting from scratch you can go with whatever)
+    * `JWT_SECRET = <whatever you like here, but secure>`
 1. `yarn dev`
 
 # App planning
@@ -1966,3 +1974,252 @@ so that the products list is viewable without needing to be signed in.
 * on platforms that can host mongo apps, a couple mentioned in class:
     * mongoDB atlas - platform you could publish (requires phone number)
     * mlab.com - decent free plan
+
+# Deployment steps
+
+1. This app technically has three servers, the frontend server serving up our React frontend, the backend server responding to GET and POST etc requests from the web browsers of our users, and the mongo server serving the database requests coming from our backend server.
+
+    To deploy our backend server we'll be using 'now' from zeit.co/now
+
+    zeit.co/now  - similar thing to heroku, works with static websites, node, docker, 
+    You can install it in a few ways, (download app and get an icon in your browser, install in your terminal)
+
+1. Before we do any deploying we want to ensure that the app is not currently in a broken state so start it up and check its all working:
+
+    go to your project: 
+
+    `cd api`
+
+    `yarn dev`
+
+    `cd web`
+
+    `yarn dev`
+
+1. We'll install 'now' using the terminal way, 'now' will allow us to deploy our backend server:
+
+    switching to a new branch for deployments first.
+
+    `git checkout -b deploy`
+
+    `cd api`
+
+    `yarn add now --dev`
+
+    this is slightly different to what they say on the website `npm install -g now` as what they say would install it for your whole system, not just the project you're working in.
+
+1. If you then ran the command for whole system, then `which now` should output a path.
+
+    If you did just the `yarn add` one then run `./node_modules/.bin/now login` and you can sign in with whatever email you like. (instructor's using the + feature of gmail to alter his gmail email to personalise it to zeit.
+
+1. Then you need to go to your email and click the confirm link
+
+1. You will then get a message saying verification code saved in a file, you should confirm that against the one sent to your email.
+
+1. Next we need to sign up to mlab to host the mongo api part of our app:
+    
+    mlab.com/login/
+
+1. After signing up, on your dashboard screen click on 'create new'
+
+1. Select which cloud provider you want, aws gives 500mb storage free. aws is available in either us east or ireland regions
+
+1. Then select the region you want and give a name for your database
+
+1. Once its deployed you can view its details and can connect using a mongo terminal and below that line is another line which is the path to this version of your database, in your front end code of your app you'll then have to adjust the line where you have mongoose.connect localhost/..... to the path you see on that page.
+you'll need to create a new user for the database to be able to go into its mongo terminal
+
+1. We want to set our app to use our local db in Development, and the mlab one for production, so we need to add a package to help us do that:
+
+    `yarn add dotenv --dev`
+
+1. Then in the entry point to the api, which we find from our package.json file for the yarn start - it points to a file, probably server.js we want to do at the top:
+
+    `require('dotenv').config()`
+
+    then wrap that in this if statement:
+    ```
+    if (process.env.NOD_ENV !== 'production'){
+        require('dotenv').config()
+    }
+    ```
+
+1. In the api folder create a new file: .env which will be our dev one and then make another one as well called production.env
+
+    .env will be key value pairs for our local db and production.env will be the key value pairs for our online cloud hosted mlabl one.
+
+1. In the models init file I'm using mongodb://localhost/yarra, that's an example of a value that is an environment var.
+put it into the .env file for our dev stuff:
+
+    ```
+    MONGO_URI = mongodb://localhost/yarra        
+    ```
+
+    then in the code you can replace the value with :
+    `process.env.MONGO_URI`
+
+1. Then go to api/middleware/auth
+
+    In there we have our jwtSecret.
+
+    Replace that hardcoded value with `process.env.JWT_SECRET`
+
+1. You can use `openssl rand -base64 48` to help you generate some 'randomness' (note if you run into issues down the track, possibly the non alpha character symbols might not be supported in the password?)
+
+1. Kill your api and start it again, and you should see successfully connected to your database, so you know your environment variables are coming through ok.
+
+1. Ensure that your *.env files are added to your .gitignore so that those saucy secrets aren't leaked onto your github
+
+1. Edit your scripts to ensure you have this for default cloud based startup: 
+"start":"node server.js"
+
+    Which is in contrast to our "dev":"nodemon server.js"  (remember the reason we used nodemon for dev is because it auto reboots our server whenever a file changes which speeds up our development times)
+
+1. Get this line from the details of your hosted mongo db:
+mongodb://<dbuser>:<dbpassword>....
+
+    and put that into your production.env file:
+
+    `MONGO_URI = mongodb://<dbuser>.......`
+
+    and then change those dbuser and dbpassword placeholders with what you set up on the mlab site.
+
+1. Then put in our JWT_SECRET value, make this different again to our development environment one. (the value should differ between your .env file and your production.env file)
+
+    `JWT_SECRET = <the password you generated - might have to remove the non alph-numerical characters>`
+
+1. Now we can deploy it with 'now':
+
+    `./node_modules/.bin/now -E production.env`
+
+    -E = use environment variables from a specific file
+
+    You might get a notice about your code and logs being made public which you'll have to confirm to.
+
+1. It will then spit out some output including a url, which is the url to your api now deployed online.
+
+    You can test it by visiting that url and appending '/products' (without quotes) to the end of it (because we had a products route in our app)
+
+1. You can add an alias script to help you run that deploy command in future:
+
+    if you have 'now' installed globally on your system:
+
+    `"deploy":"now -E production.env"`
+
+    if you just have 'now' installed within your project:
+
+    `"deploy":"./node_modules/.bin/now -E production.env"`
+
+
+1. running `now ls` will show all your deployments, (**on the free tier you're only allowed three at any one time**)
+
+    so you'll have to use the `now rm` command to remove deployments that are obsoleted, check the various now commands at this link:
+
+    https://zeit.co/docs/features/now-cli has the commands you can use 
+
+1. At this stage you have your api running on Zeit's 'now', you have an empty mongo db ready and waiting for it on mlab
+and we have not yet deployed the front end (react) server.        
+
+1. At this point, to test our online api with the REST client 
+in a new  production.http testing file: at the top of the file put:
+
+    `@host = https://yarra-api-fopwedad.now.sh`
+
+    where 'https://yarra-api-fopwedad.now.sh' is the url that you got in your terminal output from the previous command `...now -E production.env`
+
+    ```
+    @host = https://yarra-api-fopwedad.now.sh
+
+    ### list products
+
+    GET {{host}}/products
+
+    ### create a user - sign up
+
+    POST {{host}}/auth/register
+
+    ...
+    ```
+
+1. Those @variables are pretty handy, you could use them to keep your http files DRY (you may or may not wish to arrange for them to come from the .env file so keep sensitive data out of the http file (which is checked into github - see the docs for REST client if you want to find a way to do that)
+
+1. If you make those requests you'll notice some extra headers being sent back by the api since it's now hosted on a service provider (X-Now-Region: ....)
+
+    **Note:** when you click 'Send request' in the .http file you can't have any other text highlighted in that file at the same time.
+
+
+If you've come this far, the next step is to deploy our server that serves up our front-end React code.
+
+## Deploying frontend
+
+1. You can update your backends url to something more memorable with the following command:
+
+    `now alias https://yarra-api-fopwd....   yarra-api2`
+
+    now that makes it a little easier to tell our frontend server where to find our newly hosted backend server.
+
+    **Note: that that alias will have to be uploaded when you update your app and subsequently re-deploy as that will produce a new url.**
+
+
+1. In the standard readme generated when you create a new react app, there is a section on using environment variables search "embedded during runtime" ?
+
+    in /web/
+    create a 
+    .env.local with the following:
+    ```
+    REACT_APP_API_URL = http://localhost:7000
+    ```
+    and then in your /web/src/api folder your init.js file needs to be amended to make use of the new environment variable:
+    ```
+    const api = axios.create({
+      baseURL: process.env.REACT_APP_API_URI
+    })
+    ```
+    we don't need any `require` statement to use process.env because React already supports it.
+
+    **Note we need to restart our frontend server at this point**
+
+    ***From the readme: the prefix `REACT_APP_` is required**
+    its a good reminder to you that this is REACT! AKA FRONTEND (End user has access to this information don't use secret backend secrets in here)
+
+1. Now try to run your frontend server and if your environment variables are coming across OK then it should work and be talking to your local api
+
+1. At this point if you are using any other services you will also want to go through your app and change any hardcoded values into environment variables (eg Stripe tokens, (also regarding Stripe for example you would change test tokens to proper prod ones when deploying))
+
+1. Now we need to make another environment variables file for our production deployment. Make a new file .env.production in your /web/ folder and you can use the alias you set up before, eg:
+
+    ```
+    REACT_APP_API_URL = https://yarra-api2.now.sh
+    ```
+
+    ***Note: these environment variable are not sensitive, they are available on the browsers of our users, and as such there is no harm checking them into github**
+
+1. now you want to build your react server in preparation to deploying it:
+
+    `cd web`
+
+    `yarn build`
+
+    this does all the minification stuff and combining of various javascript scripts into a single blob
+
+1. Netlify has the power to connect to a github repo and automatically deploy them for you. 
+
+1. Instructor is installing the netlify cli (command line version) -- but you can also just drag and drop the web folder into netlify for a manual deploy. If you really want to use the command line method then:
+
+    `cd web`
+
+    `yarn add netlify-cli --dev`
+
+1. Note: you can get this thing called hub from github which allows you command line powers to create new repos (as opposed to signing into github on the website and using their interface)
+
+1. If you're deploying to netlify using the from github approach, it will need to be configured a little. Most of that should be self explanatory (just follow the instructions) but below are some things to note:
+
+    build commands:
+
+    `cd web && npm install && npm run build`
+
+    publish directory:
+
+    `web/build`
+
+1. Inspect the cloud based terminal on netlify for your project and you should hopefully see 'site is live' at the bottom after a successful deployment.
