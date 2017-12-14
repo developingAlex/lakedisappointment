@@ -2194,7 +2194,7 @@ If you've come this far, the next step is to deploy our server that serves up ou
 
     ***Note: these environment variable are not sensitive, they are available on the browsers of our users, and as such there is no harm checking them into github**
 
-1. now you want to build your react server in preparation to deploying it:
+1. Now you want to build your react server in preparation to deploying it:
 
     `cd web`
 
@@ -2210,7 +2210,7 @@ If you've come this far, the next step is to deploy our server that serves up ou
 
     `yarn add netlify-cli --dev`
 
-1. Note: you can get this thing called hub from github which allows you command line powers to create new repos (as opposed to signing into github on the website and using their interface)
+1. Note: you can get this thing called [hub](https://github.com/github/hub) from github which allows you command line powers to create new repos (as opposed to signing into github on the website and using their interface)
 
 1. If you're deploying to netlify using the from github approach, it will need to be configured a little. Most of that should be self explanatory (just follow the instructions) but below are some things to note:
 
@@ -2223,3 +2223,19 @@ If you've come this far, the next step is to deploy our server that serves up ou
     `web/build`
 
 1. Inspect the cloud based terminal on netlify for your project and you should hopefully see 'site is live' at the bottom after a successful deployment.
+
+1. In deploy settings you can customise the deployment a little, like customise the site name. 
+
+1. [As per the netlify docs](https://www.netlify.com/docs/redirects/#history-pushstate-and-single-page-apps), you need to have a _redirects file within the /web/ folder , add this line to that file:
+
+    `/*  /index.html 200`
+
+    then copy that _redirects file into the /web/build folder, so that it's now in both
+
+    What that does is it redirects any subdomain path entered by the user back to the index.html page, so when a user enters for example yarra.netlify.com/products. it doesn't look for an actual products page, it just directs it back to the same index.html file of the site. At that point React takes over and changes what is displayed based on the url entered.
+
+1. Go to scripts and add the following script:
+
+    `"build":"react-scripts build && cp _redirects build/_redirects",`
+
+    because the build process replaces the whole build folder, which will blow away our _redirects file
