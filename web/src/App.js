@@ -26,13 +26,16 @@ class App extends Component {
   
     decodedToken: getDecodedToken(),
     products: null,
-    wishListProducts: null
+    wishListProducts: null,
+    productCreated: false
   }
   
   onCreateProduct = ( productData) => {
     createProduct(productData)
       .then((newProduct)=>{
         console.log('successfully created new product', newProduct)
+        this.setState({productCreated: true})
+        this.load()
       })
       .catch((error) => {
         console.error('There was an error trying to create the new product: ', error.message)
@@ -92,8 +95,14 @@ class App extends Component {
     })
   }
 
+  acknowledgeProductCreated = () => {
+    const {productCreated} = this.state
+    if (productCreated) {
+      this.setState({productCreated: false})
+    }
+  }
   render() {
-    const { decodedToken, products, wishListProducts } = this.state
+    const { decodedToken, products, wishListProducts, productCreated } = this.state
     const signedIn = !!decodedToken
     
     const requireAuth = (render) => (props) =>(
@@ -124,22 +133,27 @@ class App extends Component {
             signedIn ? (
               <Redirect to='/products' />
             ) : (
-            <Fragment>
-              <SignInForm
-                onSignIn = { this.onSignIn }
-              />
-            </Fragment>
+              <Fragment>
+                <SignInForm
+                  onSignIn = { this.onSignIn }
+                />
+              </Fragment>
             )
           ) } />
           <Route path='/signup' exact render = {()=>(
-            <Fragment>
-              <SignUpForm
-                onSignUp = { this.onSignUp }
-              />
-            </Fragment>
+            signedIn ? (
+              <Redirect to='/products' />
+            ) : (
+              <Fragment>
+                <SignUpForm
+                  onSignUp = { this.onSignUp }
+                />
+              </Fragment>
+            )
           ) } />
           <Route path='/products' exact render = {()=>(
             <Fragment>
+            {this.acknowledgeProductCreated()}
               <ProductList
                 { ...products }
                 signedIn={ signedIn }
@@ -152,10 +166,15 @@ class App extends Component {
           ) } />
           <Route path='/admin/products' exact render = {requireAuth(()=>(
             <Fragment>
-              <ProductForm
-                title='Enter a new product:'
-                onSave={this.onCreateProduct }
-              />
+              { productCreated ? (
+                <Redirect to='/products' />
+              ):(
+                <ProductForm
+                  title='Enter a new product:'
+                  onSave={this.onCreateProduct }
+                />
+
+              )}
             </Fragment>
           ) ) } />
           <Route path='/wishlist' exact render = {requireAuth(()=>(
