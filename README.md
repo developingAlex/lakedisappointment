@@ -1182,72 +1182,88 @@ The most I could find about this is that it is something that is added by the **
 **Update: there were at least another two people affected by this issue but we couldn't figure out the cause**
 
 # Instructors solutions to the challenges:
+( *quick notes of instructors solution - high level (means I don't have exact code snips but its nothing we haven't done before )* )
 ## listing the products
-if we're signed in, list the products
+If we're signed in, list the products
 
-otherwise set the state's products list to null.
+Otherwise set the state's products list to null. (That was put in a `load()` method)
 
-that was put in a 'load()' method
+How do we detect when they click sign out? Apparently **this.setstate is asynchronous**
 
-how to detect when they click sign out? apparently this.setstate is asynchronous
-the second argument to setState is a callback function once setState is finished.
+The second argument to setState is a callback function that setState will call once setState is finished.
 
-but instead
-he uses componentDidUpdate and then in there compares the decodedToken to the prevState's decodedToken and if it's changed then runs the load method.
+But instead he uses `componentDidUpdate` and then in there compares the decodedToken to the `prevState`'s decodedToken and if it's changed then runs the load method.
 
-(in the screen recording he's running through how the internals of the setState method works)
+( *in the screen recording he's running through how the internals of the setState method works* )
 
 ## form to create new products
 
-similar pattern to the signup form.
+The form to create a new proudct follows the same pattern we used to make the signup form.
 
-now how to update the state to include the newly created product
+Now how to update the state to include the newly created product?
 
-uses this.setState to concat the new product onto the existin product array.
+He uses `this.setState` to concat the new product onto the existing product array.
 
-when creation happens, response from backend should spit back the newly saved document from the db.  including the db _id. in this way the frontend then has this information so that if it wants to make a subsequent request in relation to that item, it has the _id to use to identify which one it's talking about to the server.
+When creation happens, the response from the backend should spit back the newly saved document from the db. This will include the documents id property `_id`. In this way the frontend then has the necessary information so that if it wants to make a subsequent request in relation to that item, it has the _id to use to identify which one it's talking about to the server. (*As opposed to sending a request to the server to have a product created, and getting only a success message, and then needing to make a subsequent request to the server to find the document that was just created to get a hold of its document _id*)
 
 ## updating a product
 
-a good amazing cheatsheet mongoose vs active record (from his coder academy patterns github)
+A good amazing cheatsheet that makes a good reference at this point is [mongoose vs active record](https://github.com/Coder-Academy-Patterns/mongoose-vs-activerecord)
 
-he's using the findOneAndUpdate(conditions, changes, {new: true, runValidators: true})
+He's using the `findOneAndUpdate(conditions, changes, {new: true, runValidators: true})`
 
-the {new: true, runValidators: true} is to override the mongoose defaults 
-new: true => Please return to us the NEW product
-runValidators => self explanatory
+The `{new: true, runValidators: true}` is to override the mongoose defaults 
+`new: true` = Please return to us the NEW product once you've made it (*front end to backend*)
+`runValidators` = Pretty self explanatory, ensures the data passes the validation tests in the model's schema
 
-he adds that to the backend code in a new route: put /products/:id
+He adds that to the backend code in a new route: put /products/:id
 
-(you can refer to his git commits for step by step code changes)
+(you can refer to his [git commits](https://github.com/Coder-Academy-Patterns/yarra) for step by step code changes, *they may be on a non-master branch if you don't see them on the master*)
 
 He wanted to have a single product form that could be used for both creating and editing.
 
-he handles the difference between the two cases with props. he changes the title of the form using a prop so the caller can decide. and he runs a generic 'onSubmit' that is also passed by the caller so the caller can handle what to do with the data depending on use case.
+* He handles the difference between the two cases with props. He changes the title of the form using a prop so the caller can decide, and then he runs a generic 'onSubmit' that is also passed by the caller so the caller can handle what to do with the data depending on use case.
+
+* or put more explicitly:
+
+    There is a function for creating a new product, and there is a function for updating an existing product, those functions invoke different mongoose database calls. (*in the instructors repo those functions are `export function createProduct(data) {...}` and `export function updateProduct(id, data) {...}` within the file /web/src/api/products.js*)
+
+    Those functions exist in an appropriate file along with other files of database modification functions like the ones for adding new users. (*The files in /web/src/api*)
+
+    The App.js file imports those two functions so it can use them.
+
+    The App.js logic, when showing the form to create a new product, passes that form a callback function (a function the form can call when its button is clicked) which the App.js logic sets as the function for creating a new product.
+
+    The App.js code that has to do with showing the form for updating a product, renders the **same** form as it does for creating a new product, but when it passes *that* form a callback function it sets that function to be the one for **editing** a product. 
+
+    In this way the code we wrote for displaying a Form to do with products has been reused, and the data collected by the form will be funneled to the appropriate function (create or modify) because the Form was passed a function to just call when it was finished, and it's now the responsibility of the calling component (App.js) to arrange the appropriate function to be passed.
 
 ### doing the edit form for updating products
 
-in the components/Product.js
+( *in the components/Product.js* )
 
-he adds an onEdit command in an onClick on the div of an individual proudct listing.
-the product list he has as its own component
+He adds an onEdit command in an onClick on the div of an individual product listing.
+The product list he has as its own component.
 
-the individual product component's responsibility: I'll let you know when I'm clicked
-the product list component's responsibility: I'll let you know which one was clicked.
+The individual **product** component's responsibility to the parent component (product list): **I'll let you know when I'm clicked**
+
+The **product list** component's responsibility to the update function: I'll let you know **which one** was clicked.
 
 **Note: if you need to wrap multiple elements in a div because it's in a javascript return statement, but you don't actually want a div, use the fragment element**
 
-clicking on a product then has the effect of setting a value in the state called activeProductId and this gets set to the id of the product that was clicked.
+Clicking on a product then has the effect of setting a value in the state called activeProductId and this gets set to the id of the product that was clicked.
 
-in order to get the product edit form to render when a product was clicked, the productList component has a prop called renderEditForm(product) which is a function passed to it by the parent calling function (as an arrow function)
+In order to get the product edit form to render when a product was clicked, the productList component has a prop called renderEditForm(product) which is a function passed to it by the parent calling function (as an arrow function).
 
-to then used .map to find the product in the list that was updated, and if it was it gets replaced with the updated version.
+To ensure that the form for editing loads pre-filled with the existing data of the product, the product object is passed to the form, which the form then uses to see what the current data is, and set the defaultValue of its fields to be that data, in this way if you had a product with brand name 'ACME' and name 'Widgy bar' then if the user clicks on it, the same form as used for creating new products gets displayed beneath the product and the field for brand name already has 'ACME' and the field for name already has 'Widgy bar' in it. 
 
-and then finally sets the states activeProductId back to null.
+You then use .map to find the product in the list that was updated, and if it was it gets replaced with the updated version.
+
+Finally set the state's activeProductId back to null.
 
 # following along to make a wishlist functionality where users can maintain a wishlist of products (demonstrates how to manage database relationships)
 
-1. create a new model called wishlist initially a copy paste of the models/product.js code
+1. Create a new model called wishlist initially a copy paste of the models/product.js code
     ```javascript
     const mongoose = require('./init')
     const Schema = mongoose.Schema
@@ -1282,9 +1298,9 @@ and then finally sets the states activeProductId back to null.
     module.exports = Wishlist
     ```
 
-1. next up is routes for the wishlist:
+1. Next up is routes for the wishlist:
 
-    copy the products routes file and then edit it to change it to be about wishlists with a couple tweaks:
+    Copy the products routes file and then edit it to change it to be about wishlists with a couple tweaks:
     ```javascript
     const express = require('express')
     const Wishlist = require('../models/Wishlist')
@@ -1306,7 +1322,7 @@ and then finally sets the states activeProductId back to null.
 
     module.exports = router
     ```
-1. we changed it to error code 500 for internal server error as it wouldn't be the users fault in this case.
+1. We changed it to error code 500 for internal server error as it wouldn't be the users fault in this case.
     ```javascript
     const express = require('express')
     const Wishlist = require('../models/Wishlist')
@@ -1328,9 +1344,9 @@ and then finally sets the states activeProductId back to null.
 
     module.exports = router
     ```
-    remember to add require('./routes/wishlists'), to your server.use array in server.js
+    Remember to add require('./routes/wishlists'), to your `server.use` array in server.js
 
-1. now make a test GET method in the check.http file, but first you will have to make the post request to authenticate so you can grab a copy of the token then you can make a post request like this:
+1. Now make a test `GET` method in the check.http file, but first you will have to make the post request to authenticate so you can grab a copy of the token, *then* you can make a post request like this:
     ```
     ###
 
@@ -1339,7 +1355,7 @@ and then finally sets the states activeProductId back to null.
     ###
     ```
 
-1. make the wishlist return the products in itself:
+1. Make the wishlist return the products in itself:
 
     ```javascript
     const express = require('express')
@@ -1366,7 +1382,7 @@ and then finally sets the states activeProductId back to null.
     module.exports = router
     ```
 
-1. and return an empty array otherwise:
+1. And return an empty array otherwise:
     ```javascript
     const express = require('express')
     const Wishlist = require('../models/Wishlist')
@@ -1397,18 +1413,14 @@ and then finally sets the states activeProductId back to null.
 
 1. We do it this way, in the backend, so that the client side doesn't have to have as much logic about how to handle a possible null response
 
-1. moving onto handling the post from a user to add a product to the wishlist:
-
+1. Moving onto handling the post from a user to add a product to the wishlist:
     ```javascript
-
     router.post('/wishlist/products/:productID', (req, res) => {
       const { productID } = req.params
       
     })
     ```
- 
-1. going to use the findOneAndUpdate to make the update.
-
+1. Going to use the `findOneAndUpdate` to make the update.
     ```javascript
     router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
       const { productID } = req.params
@@ -1420,7 +1432,7 @@ and then finally sets the states activeProductId back to null.
       })
     })
     ```
-1. Add the code to make the change for us using $addToSet
+1. Add the code to make the change for us using `$addToSet`
     ```javascript
     router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
       const { productID } = req.params
@@ -1439,7 +1451,7 @@ and then finally sets the states activeProductId back to null.
     })
     ```
 
-    ```
+    ```javascript
     router.post('/wishlist/products/:productID', requireJWT, (req, res) => {
       const { productID } = req.params
       Wishlist.findOneAndUpdate(
@@ -1463,12 +1475,12 @@ and then finally sets the states activeProductId back to null.
     })
     ```
 
-1. now to add a test to your check.http with a valid and invalid product id.
+1. Now to add a couple tests to your check.http, one with a valid and one with an invalid product id.
 
-    and you can see that the check will fail if we pass as an id 'robot' but it will pass if we pass what looks like a valid id: 
-    below the one ending in 222 doesn't correspond to anything in the database but that request is still honored.
+    You can see that the check will fail if we pass as an id 'robot' but it will pass if we pass what looks like a valid id: 
+
+    Below the one ending in 222 doesn't correspond to anything in the database but that request is still honored.
     ```
-
     POST http://localhost:7000/wishlist/products/5a28c10a1b6bcd3dcb60d222
     Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
 
@@ -1480,10 +1492,9 @@ and then finally sets the states activeProductId back to null.
     ###
     ```
 
-1. the opposite of $addToSet is $pull, needed for removing products from the wishlist.
+1. The opposite of `$addToSet` is `$pull`, needed for removing products from the wishlist.
 
-    then to implement that functionality we basically copy and paste what we wrote for adding and then change the operator from $addToSet to $pull and change the http verb to delete:
-
+    To implement that functionality we basically copy and paste what we wrote for adding and then change the operator from `$addToSet` to `$pull` and change the http verb to `delete`:
     ```javascript
     router.delete('/wishlist/products/:productID', requireJWT, (req, res) => {
       const { productID } = req.params
@@ -1507,7 +1518,7 @@ and then finally sets the states activeProductId back to null.
         })
     })
     ```
-1. then test in your check.http file :
+1. Then test in your check.http file :
 
     ```
     ###
@@ -1516,9 +1527,9 @@ and then finally sets the states activeProductId back to null.
     Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTEyNjk0NjY1LCJleHAiOjE1MTMyOTk0NjUsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.eCTl5CxCWaSYoHwipnmrcZ6fQf2jAvNaVUuDpE8eU6o
     ```
 
-1. Now as it is, the response for the wishlist is just an array of product ids. but it would be nicer if it responded with the actual products.
+1. Now as it is, the response for the wishlist is just an array of product ids. But it would be nicer if it responded with the actual products.
 
-    We can make that happen easily with the populate method, inserted into our get wishlist router code:
+    We can make that happen easily with the populate method, inserted into our GET wishlist router code:
 
     ```javascript
     router.get('/wishlist', requireJWT, (req, res) => {
@@ -1531,7 +1542,7 @@ and then finally sets the states activeProductId back to null.
     …
     ```
 
-    That's just for the router.get, but regarding .post and .delete, you can also make them respond in the same way by adding the same line just before their .then lines as we did above.
+    That's just for the router.get, but regarding .post and .delete, you can also make them respond in the same way by adding the same line just before their `.then` lines as we did above.
 
 # Challenges to expand the wishlist functionality
 
@@ -1541,7 +1552,6 @@ and then finally sets the states activeProductId back to null.
 - Add dotenv package to api, and use for mongo URI, JWT secret
 
 ## Add wishlist listing to React
-
 
 # 20171212 - Follow along in class demonstrating routing with different URLS in ReactJS
 
@@ -1555,13 +1565,13 @@ using the conditional trick to only render buttons if those functions are passed
 
     When those functions are passed through from the app.js file, in there they are declared as functions that basically make api calls to make the changes and then update the state once they get a response back.
 
-1. We're going to be using *react-router* which has become the defacto standard for routing in react, (they have a dedicated docs site for learning about it - when you go there click on the web button for the web docs) 
+1. We're going to be using *react-router* which has become the defacto standard for routing in react (they have a dedicated docs site for learning about it - when you go there click on the web button for the web docs).
 
-    looking at the section 'static routing'
+    Looking at the section 'static routing'.
 
-    an example, looking at their own docs, they have a side bar that persists when you navigate their docs. you can see that that is based on the url as everything in the docs for web is preceeded by .../react-router/web/...
+    An example, looking at their own docs, they have a side bar that persists when you navigate their docs. you can see that that is based on the url as everything in the docs for web is preceeded by .../react-router/web/...
 
-1. Install it in your web (frontend) directory `yarn add react-router-dom`
+1. Install it in your web (frontend) directory with `yarn add react-router-dom`
 
     It was mentioned that this was related to 'history': the javascript library handles the cross browser issues with handling different routes with callbacks that run when the path changes. 
 
@@ -1569,7 +1579,7 @@ using the conditional trick to only render buttons if those functions are passed
     
     `import { BrowserRouter as Router, Route } from 'react-router-dom'`
 
-    ...that 'as' above is like an alias.
+    ...that 'as' above is like an alias it allows us to do the following instead of <BrowserRouter>.
 
     In the app.js in the render's return statement, which returns single div, we're going to wrap it in `<Router> </Router>` tags so that it's now a `<Router>` element that is being returned and no longer a `<div> ` 
 
@@ -1577,7 +1587,7 @@ using the conditional trick to only render buttons if those functions are passed
 
 1. We only want the h2 and h1 to only show on the home page.
 
-    within the <div> mentioned above add:
+    Within the <div> mentioned above add:
     ```javascript
     <Route path = '/' exact render={()=>(
 
@@ -1585,13 +1595,13 @@ using the conditional trick to only render buttons if those functions are passed
     />
     ```
 
-    The `exact` ensures it doesn't see that path as a prefix
+    The `exact` ensures it doesn't see that path as a prefix.
 
-    and then within that block is where you put the `<h1>` and `<h2>` elements, now they will only render when the path is '/'
+    Then within that block is where you put the `<h1>` and `<h2>` elements, now they will only render when the path is exactly '/'.
 
-    now you can wrap the h1 and h2 in a `<Fragment>` element to fix the syntax errors of trying to return multiple elements.
+    Now you can wrap the h1 and h2 in a `<Fragment>` element to fix the syntax errors of trying to return multiple elements.
 
-    scroll all the way to the top of your file, where you are importing React, {Component} and add in fragment: `import React, {Component, Fragment} from 'react'`
+    Scroll all the way to the top of your file, where you are importing React, looking at the `{Component}` part, add in fragment to that: `import React, {Component, Fragment} from 'react'`
 
     Now you'll notice if you change the url to http://localhost:3000/somethingelse it will now no longer render the h1 and h2.
 
@@ -1599,9 +1609,9 @@ using the conditional trick to only render buttons if those functions are passed
 
     Because we're using an arrow function we're still able to refer to the variables that were declared outside of that function. eg, in the case of the wishlist, we still have access to the **signedIn** and **wishlist** variables and also the `this.onRemoveProductFromWishlist` and similar.
 
-1. At the moment our render method is rendering everything. Now we'll look at splitting that up into their own logical pages ('/' for home page, '/signin' for the the signin page etc.)
+1. At the moment our render method is rendering everything. Now we'll look at splitting that up into their own logical pages ('/' for home page, '/signin' for the the signin page etc).
 
-    wrap the sign up and sign in html in another route: 
+    Wrap the sign up and sign in html in another route: 
     ```javascript
     <Route path='/signin' exact render = {()=> (
       <Fragment> 
@@ -1627,7 +1637,7 @@ using the conditional trick to only render buttons if those functions are passed
 
 1. Moved the rendering code for the list of products to a path /products as above
 
-1. Install the prettifier vs code plugin `Prettier formatter for Visual Studio Code` by Esben Petersen if you want to have your indentations and formatting helpfully handled automatically for you
+1. Install the 'Prettier' VS Code plugin `Prettier formatter for Visual Studio Code` by Esben Petersen if you want to have your indentations and formatting helpfully handled automatically for you
 
     **You might want to commit your changes before you run that.**
 
@@ -1636,7 +1646,29 @@ using the conditional trick to only render buttons if those functions are passed
     run it from vs code command palette as 'format document'
 
     Prettier.io has a section on pre-commit hook, which you can follow if you want it to automatically format your style before git committing.
+1. Regarding Prettier and VS Code, there is some level of customization offered by Prettier if it doesn't exactly match your 'style'. Here are some useful VS code settings:
 
+    [// Convinces employers that you are using spaces instead of tabs](https://stackoverflow.blog/2017/06/15/developers-use-spaces-make-money-use-tabs/)
+    ```
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": true,
+    ```
+
+    // Set prettier to not include semicolons and prefer single quotes
+    ```
+    "prettier.singleQuote": true,
+    "prettier.semi": false,
+    ```
+    
+    // If you are annoyed by node_modules showing up in the sidebar
+    ```
+    "files.exclude": {
+      "node_modules/": true,
+      "*/node_modules/": true
+    }
+    ```
+    [Other useful VS Code settings](https://github.com/Microsoft/vscode-tips-and-tricks#tune-your-settings)
 1. Making a route for creation of new products as '/admin/products'
 
     we now have 
@@ -1834,7 +1866,7 @@ using the conditional trick to only render buttons if those functions are passed
 
 1. Now the error returned for an incorrect password was just the error code 400. 
 
-1. make an error component (because we're going to need to run some logic to decypher the true error for the user.)
+1. Make an error component (because we're going to need to run some logic to decypher the true error for the user.)
 
     ```javascript
     import React from 'react'
@@ -2018,7 +2050,7 @@ so that the products list is viewable without needing to be signed in.
 
 1. Next we need to sign up to mlab to host the mongo api part of our app:
     
-    mlab.com/login/
+    https://mlab.com/login/
 
 1. After signing up, on your dashboard screen click on 'create new'
 
