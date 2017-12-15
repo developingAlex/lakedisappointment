@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 // import logo from './logo.svg';
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
+// import  {browserHistory} from 'react-router' //for redirecting to /products upon successful sign in //no browserHistory export from react-router
 import './App.css';
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
@@ -46,6 +47,11 @@ class App extends Component {
       console.log('Signed in:',decodedToken)
       this.setState({decodedToken})
       this.load()
+      // window.location.href = ('/products'); //not-optimal UX, 
+      // window.location.replace('/products'); //not-optimal UX, 
+      // browserHistory.push('/products') // no browserHistory export from react-router
+      // this.render()(<Redirect to='/products' />) //doesn't work.
+      //correct way is to add a ternary based on whether the user is signed in, into the rend part when the route is 'signin', seamless!
     })
   }
     
@@ -115,11 +121,15 @@ class App extends Component {
             </Fragment>
           ) } />
           <Route path='/signin' exact render = {()=>(
+            signedIn ? (
+              <Redirect to='/products' />
+            ) : (
             <Fragment>
               <SignInForm
                 onSignIn = { this.onSignIn }
               />
             </Fragment>
+            )
           ) } />
           <Route path='/signup' exact render = {()=>(
             <Fragment>
