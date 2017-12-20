@@ -2254,6 +2254,7 @@ If you've come this far, the next step is to deploy our server that serves up ou
 
     `web/build`
 
+    The reason we need to cd into web is that that is the folder for the frontend server and it is the frontend server that we are deploying to netlify, but if you deploy by linking to github, the repository contains both frontend and backend servers.
 1. Inspect the cloud based terminal on netlify for your project and you should hopefully see 'site is live' at the bottom after a successful deployment.
 
 1. In deploy settings you can customise the deployment a little, like customise the site name. 
