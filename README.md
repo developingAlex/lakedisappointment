@@ -84,7 +84,7 @@ If you clone this, to run it you have to:
 1. Install mongoose:
     1. `cd api`
     1. `yarn add mongoose`
-1. Create foler: /api/models
+1. Create folder: /api/models
 1. Create file: /api/models/init.js
 1. Populate /api/models/init.js with boilerplate:
     ```javascript
@@ -191,7 +191,7 @@ If you clone this, to run it you have to:
 1. Looking into [passport](https://github.com/agrajm/passport-mongo) for authentication. 
     1. `cd api`
     1. `yarn add passport passport-local passport-local-mongoose`
-1. Going to the create the user model next:
+1. Going to create the user model next:
     ```javascript
     const mongoose = require('./init')
 
@@ -329,6 +329,21 @@ If you clone this, to run it you have to:
       "password": "password123"
     }
     ```
+1. If that worked you should have gotten a response from the server with a status of 200 OK and a response with data containing a token as in the below example:
+    ```
+    HTTP/1.1 200 OK
+    X-Powered-By: Express
+    Access-Control-Allow-Origin: *
+    Content-Type: application/json; charset=utf-8
+    Content-Length: 217
+    ETag: W/"d9-yQIU6/XlEszncUbBcCQfDuEFxvQ"
+    Date: Sun, 07 Jan 2018 12:20:34 GMT
+    Connection: keep-alive
+
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwuY29tIiwiaWF0IjoxNTE1MzI3NjM0LCJleHAiOjE1MTU5MzI0MzQsInN1YiI6IjVhMjhkOWI2M2EwYmVhM2U4ZGUzZjljZiJ9.c9RP3hEwuGpZUFmMO3MiUGsTH5SQdpl8nwgJvF6zMM4"
+    }
+    ```
 1. fine so far but if we wanted to allow a session (session: true) ( leave a cookie on the browser ) we need to have the passport initialized:
     **api/middleware/auth.js**
     ```javascript
@@ -396,6 +411,7 @@ If you clone this, to run it you have to:
 1. add the functionality to allow sign in based off of jwt tokens instead of username and password:
 
     `cd api`
+
     `yarn add passport-jwt`
 1. add to api/middleware/auth.js:
     ```javascript
