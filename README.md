@@ -2087,14 +2087,14 @@ you'll need to create a new user for the database to be able to go into its mong
 
     then wrap that in this if statement:
     ```
-    if (process.env.NOD_ENV !== 'production'){
+    if (process.env.NODE_ENV !== 'production'){
         require('dotenv').config()
     }
     ```
 
 1. In the api folder create a new file: .env which will be our dev one and then make another one as well called production.env
 
-    .env will be key value pairs for our local db and production.env will be the key value pairs for our online cloud hosted mlabl one.
+    .env will be key value pairs for our local db and production.env will be the key value pairs for our online cloud hosted mlab one.
 
 1. In the models init file I'm using mongodb://localhost/yarra, that's an example of a value that is an environment var.
 put it into the .env file for our dev stuff:
