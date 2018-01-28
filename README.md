@@ -2275,16 +2275,14 @@ If you've come this far, the next step is to deploy our server that serves up ou
 
 1. In deploy settings you can customise the deployment a little, like customise the site name. 
 
-1. [As per the netlify docs](https://www.netlify.com/docs/redirects/#history-pushstate-and-single-page-apps), you need to have a _redirects file within the /web/ folder , add this line to that file:
+1. [As per the netlify docs](https://www.netlify.com/docs/redirects/#history-pushstate-and-single-page-apps), you need to have a _redirects file within the /web/build folder, add this line to that file:
 
     `/*  /index.html 200`
 
-    then copy that _redirects file into the /web/build folder, so that it's now in both
+    then copy that _redirects file into the /web folder, so that it's now in both
 
-    What that does is it redirects any subdomain path entered by the user back to the index.html page, so when a user enters for example yarra.netlify.com/products. it doesn't look for an actual products page, it just directs it back to the same index.html file of the site. At that point React takes over and changes what is displayed based on the url entered.
+    What that does is it redirects any subdomain path entered by the user back to the index.html page, so when a user enters for example yarra.netlify.com/products, it prevents netlify from going looking for a products.html file, it just directs it back to the same index.html file of the site. At that point React takes over and changes what is displayed *based* on the url entered.
 
-1. Go to scripts and add the following script:
+1. The problem now is that the build folder gets blown away when you deploy to netlify and is reconstructed on netlify's platform, so the _redirects file will not persist, the solution is to adjust our build script in our package.json file to additionally copy the _redirects file into the build folder *after* the build folder is recreated:
 
     `"build":"react-scripts build && cp _redirects build/_redirects",`
-
-    because the build process replaces the whole build folder, which will blow away our _redirects file
